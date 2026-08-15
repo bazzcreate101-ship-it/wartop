@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import { brandMark, icons } from '../assets/images';
 
 
@@ -16,18 +15,15 @@ export default function LoginModal({ isOpen, onClose }) {
     setError('');
     setCooldownUntil(Date.now() + 5000);
     try {
-      const { error: authError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-          queryParams: { access_type: 'offline', prompt: 'select_account' }
-        }
-      });
-      if (authError) throw authError;
+      const configResponse = await fetch('/api/auth/session', { credentials: 'same-origin' });
+      const config = await configResponse.json().catch(() => ({}));
+      if (!config.googleLoginAvailable) throw new Error('Google OAuth is not configured');
+      const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      window.location.assign(`/api/auth/google/start?returnTo=${encodeURIComponent(returnTo)}`);
       onClose();
     } catch (err) {
       console.error('Google Login error:', err);
-      setError('Login gagal. Pastikan Supabase sudah dikonfigurasi dengan benar.');
+      setError('Login Google belum dapat dimulai. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }

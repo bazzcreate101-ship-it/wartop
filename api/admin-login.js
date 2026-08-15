@@ -1,10 +1,13 @@
+import bcrypt from 'bcryptjs';
 import {
+  ADMIN_SESSION_COOKIE,
   cleanText,
   getAdminSecret,
   getClientIp,
   rateLimit,
   safeEqual,
   sendJson,
+  setHttpOnlyCookie,
   signPayload,
 } from './_security.js';
 
@@ -24,8 +27,9 @@ export default async function handler(req, res) {
   }
 
   const configuredPassword = process.env.ADMIN_PASSWORD || '';
+  const configuredPasswordHash = process.env.ADMIN_PASSWORD_HASH || '';
   const signingSecret = getAdminSecret();
-  if (!configuredPassword || !signingSecret) {
+  if ((!configuredPassword && !configuredPasswordHash) || !signingSecret) {
     return sendJson(res, 503, { error: 'Admin auth belum dikonfigurasi di environment server.' });
   }
 
@@ -37,7 +41,10 @@ export default async function handler(req, res) {
     return sendJson(res, 400, { error: 'Nama admin tidak valid.' });
   }
 
-  if (!safeEqual(submittedPassword, configuredPassword)) {
+  const passwordMatches = configuredPasswordHash
+    ? await bcrypt.compare(submittedPassword, configuredPasswordHash).catch(() => false)
+    : safeEqual(submittedPassword, configuredPassword);
+  if (!passwordMatches) {
     return sendJson(res, 401, { error: 'Password salah. Coba lagi.' });
   }
 
@@ -49,8 +56,9 @@ export default async function handler(req, res) {
     exp: issuedAt + EIGHT_HOURS,
   }, signingSecret);
 
+  setHttpOnlyCookie(req, res, ADMIN_SESSION_COOKIE, token, EIGHT_HOURS);
+
   return sendJson(res, 200, {
-    token,
     admin: { name: adminName, loggedAt: issuedAt },
     expiresAt: issuedAt + EIGHT_HOURS,
   });

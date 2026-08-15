@@ -1,51 +1,38 @@
 # Wartop Project Context
 
-Updated: 2026-08-15
+Wartop is a React/Vite storefront deployed as one Node.js application on cPanel. `server.js` serves the production build and the same-origin `/api/*` backend. Persistent data is stored in cPanel MySQL/MariaDB; browser storage is only a local cache used by the existing UI.
 
-## Product
+## Runtime architecture
 
-Wartop is a React/Vite storefront for game top-up, digital vouchers, entertainment subscriptions, AI tools, e-wallet products, and an internal customer wallet.
+- Frontend: React 19 + Vite, built to `dist/`.
+- Backend: Express in `server.js`, compatible with Node.js 22 and cPanel/Passenger.
+- Database: pooled `mysql2/promise` connections in `server/db.js`.
+- State persistence: `app_state` JSON rows managed by `server/stateStore.js`.
+- Registered Google users: normalized `users` table.
+- Authentication: direct Google OAuth and signed HttpOnly user/admin cookies.
+- AI chat: Premzone is called only by `api/chat.js`; the key never enters Vite.
 
-The public interface uses Wartop's blue–cyan identity:
+## Important paths
 
-- deep navy base surfaces;
-- electric blue, cyan, and aqua highlights;
-- Wartop wordmark in the header, hero, and footer;
-- Wartop mark for favicon, compact avatars, chat, and admin login;
-- responsive layouts for desktop and mobile.
+- `server.js`: cPanel startup file, API mounts, static files, and SPA fallback.
+- `server/`: database, state store, and safe logging helpers.
+- `api/`: same-origin Express-compatible route handlers.
+- `database/schema.sql`: one-time MySQL/MariaDB schema import.
+- `database/MIGRATION_FROM_SUPABASE.md`: optional legacy-data migration instructions.
+- `scripts/import-supabase-data.js`: one-time JSON importer; it has no legacy SDK dependency.
+- `CPANEL_DEPLOY.md`: full deployment and update runbook.
+- `MIGRATION_AUDIT.md`: old-to-new implementation mapping.
 
-## Main architecture
-
-- `src/App.jsx`: client routing, auth state, account protection, and product state.
-- `src/components/`: storefront header, Wartop hero, product navigation, flash sale, login, SEO, footer, and chat.
-- `src/views/`: home, order, invoice, wallet, transactions, legal/blog pages, and admin screens.
-- `src/lib/`: cloud state, storage, chat, wallet, user activity, and Supabase integration.
-- `api/`: Vercel serverless endpoints for admin auth, AI chat, state synchronization, and traffic.
-- `supabase/wartop_app_state.sql`: state table schema for a fresh Wartop deployment.
-
-## Brand assets
-
-- `src/assets/wartop-mark.png`: compact Wartop mark bundled by Vite.
-- `src/assets/wartop-wordmark.png`: full Wartop wordmark bundled by Vite.
-- `public/wartop-mark.png`: public fallback mark.
-- `public/wartop-wordmark.png`: public fallback wordmark.
-- `public/favicon.png`: browser icon.
-- `public/logo.png`: social and structured-data image.
-
-## Runtime notes
-
-- Local development remains usable without Supabase environment variables through the safe auth fallback.
-- A deployed environment should configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and the server-side service-role variables.
-- A deployment migrating from a previous state table must rename or copy that table to `wartop_app_state` before the new API is published.
-- Public SEO metadata currently uses `https://wartop.shop`; update `index.html`, `src/components/SeoManager.jsx`, `public/robots.txt`, and `public/sitemap.xml` if the production domain differs.
-
-## Validation
-
-Before deployment, run:
+## Production commands
 
 ```bash
-npm run lint
+npm install --include=dev
 npm run build
+npm start
 ```
 
-Then verify the home, order, invoice, wallet, transactions, login, chat, and admin views at desktop and mobile widths.
+On cPanel, configure `server.js` as the startup file and use Restart App instead of running a separate process manager.
+
+## Domain
+
+Public metadata and OAuth configuration target `https://wartop.shop`.

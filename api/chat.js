@@ -1,3 +1,4 @@
+import { logError } from '../server/logger.js';
 import {
   clampArray,
   cleanText,
@@ -88,7 +89,7 @@ function isPromptInjection(text) {
 function looksLikeWartopTopic(message, productNames) {
   const text = message.toLowerCase();
   const keywords = [
-    'wartop', 'wartop', 'top up', 'topup', 'voucher', 'game', 'diamond', 'transaksi',
+    'wartop', 'top up', 'topup', 'voucher', 'game', 'diamond', 'transaksi',
     'invoice', 'status', 'bayar', 'pembayaran', 'qris', 'dana', 'gopay',
     'ovo', 'shopeepay', 'linkaja', 'bank', 'virtual account', 'admin',
     'cs', 'bantuan', 'refund', 'promo', 'diskon', 'harga', 'produk',
@@ -119,7 +120,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const apiKey = process.env.PREMZONE_API_KEY || process.env.VITE_PREMZONE_API_KEY || '';
+  const apiKey = process.env.PREMZONE_API_KEY || '';
   if (!apiKey) {
     return sendJson(res, 503, {
       reply: 'Maaf Kak, layanan AI sedang belum aktif. Vindy akan arahkan ke admin Wartop.',
@@ -229,13 +230,15 @@ Jawab dalam bahasa Indonesia ramah, maksimal 3 kalimat pendek.`;
         ],
         temperature: 0.3,
       }),
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
       throw new Error(`Premzone API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
+    if (!Array.isArray(data?.choices)) throw new Error('Premzone response is invalid');
     let reply = cleanText(data?.choices?.[0]?.message?.content, 900);
     const forwardToAdmin = reply.includes('[FORWARD_TO_ADMIN]');
     reply = reply.replace('[FORWARD_TO_ADMIN]', '').trim();
@@ -244,7 +247,8 @@ Jawab dalam bahasa Indonesia ramah, maksimal 3 kalimat pendek.`;
       reply: reply || 'Ada yang bisa Vindy bantu lagi seputar Wartop, Kak?',
       forwardToAdmin,
     });
-  } catch {
+  } catch (error) {
+    logError({ endpoint: '/api/chat', status: 502, category: 'premzone_upstream', error });
     return sendJson(res, 502, {
       reply: 'Maaf Kak, jaringan Vindy sedang bermasalah. Vindy akan arahkan ke admin Wartop.',
       forwardToAdmin: true,

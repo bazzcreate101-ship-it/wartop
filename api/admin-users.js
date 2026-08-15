@@ -1,81 +1,51 @@
+import { getPool } from '../server/db.js';
+import { logError } from '../server/logger.js';
+import { readStateRows } from '../server/stateStore.js';
 import {
   cleanText,
-  getAdminSecret,
-  readBearer,
+  readAdminSession,
   sendJson,
-  verifySignedToken,
 } from './_security.js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-function isConfigured() {
-  return Boolean(SUPABASE_URL && SERVICE_ROLE_KEY);
-}
-
-function normalizeAuthUser(user) {
-  const metadata = user?.user_metadata || {};
+function normalizeDatabaseUser(user) {
   return {
-    name: cleanText(metadata.full_name || metadata.name || user.email || 'User Wartop', 120),
-    email: cleanText(user.email, 160),
-    picture: cleanText(metadata.avatar_url || metadata.picture || '', 500),
-    registeredAt: cleanText(user.created_at, 80),
-    registeredAtIso: cleanText(user.created_at, 80),
-    lastLogin: cleanText(user.last_sign_in_at || user.updated_at || user.created_at, 80),
-    lastLoginAt: cleanText(user.last_sign_in_at || user.updated_at || user.created_at, 80),
-    source: 'supabase_auth',
+    name: cleanText(user.display_name || user.email || 'User Wartop', 120),
+    email: cleanText(user.email, 160).toLowerCase(),
+    picture: cleanText(user.avatar_url || '', 500),
+    registeredAt: user.created_at ? new Date(user.created_at).toISOString() : '',
+    registeredAtIso: user.created_at ? new Date(user.created_at).toISOString() : '',
+    lastLogin: user.last_login_at ? new Date(user.last_login_at).toISOString() : '',
+    lastLoginAt: user.last_login_at ? new Date(user.last_login_at).toISOString() : '',
+    source: cleanText(user.provider || 'google', 40),
   };
 }
 
+function mergeActivity(authUsers, stateUsers) {
+  const byEmail = new Map();
+  [...authUsers, ...(Array.isArray(stateUsers) ? stateUsers : [])].forEach((user) => {
+    const email = cleanText(user?.email, 160).toLowerCase();
+    if (!email) return;
+    byEmail.set(email, { ...(byEmail.get(email) || {}), ...user, email });
+  });
+  return Array.from(byEmail.values()).slice(0, 1000);
+}
+
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return sendJson(res, 405, { error: 'Method not allowed' });
-  }
-
-  const payload = verifySignedToken(readBearer(req), getAdminSecret());
-  if (!payload || payload.typ !== 'admin') {
-    return sendJson(res, 401, { error: 'Unauthorized' });
-  }
-
-  if (!isConfigured()) {
-    return sendJson(res, 503, {
-      ok: false,
-      users: [],
-      error: 'Supabase service role belum dikonfigurasi.',
-    });
-  }
+  if (req.method !== 'GET') return sendJson(res, 405, { error: 'Method not allowed' });
+  if (!readAdminSession(req)) return sendJson(res, 401, { error: 'Unauthorized' });
 
   try {
-    const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/admin/users?per_page=1000&page=1`, {
-      method: 'GET',
-      headers: {
-        apikey: SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return sendJson(res, response.status, {
-        ok: false,
-        users: [],
-        error: 'Gagal mengambil user Supabase Auth.',
-        detail: cleanText(data?.message || data?.error || '', 180),
-      });
-    }
-
-    const users = Array.isArray(data?.users)
-      ? data.users.map(normalizeAuthUser).filter((user) => user.email)
-      : [];
-
+    const [[rows], state] = await Promise.all([
+      getPool().execute(
+        `SELECT email, display_name, avatar_url, provider, created_at, last_login_at
+         FROM users ORDER BY created_at DESC LIMIT 1000`,
+      ),
+      readStateRows(['wartop_users']),
+    ]);
+    const users = mergeActivity(rows.map(normalizeDatabaseUser), state.wartop_users);
     return sendJson(res, 200, { ok: true, users });
   } catch (error) {
-    return sendJson(res, 500, {
-      ok: false,
-      users: [],
-      error: 'Gagal mengambil user Supabase Auth.',
-      detail: cleanText(error.message, 180),
-    });
+    logError({ endpoint: '/api/admin-users', status: 500, category: 'database_read', error });
+    return sendJson(res, 500, { ok: false, users: [], error: 'Gagal mengambil daftar user.' });
   }
 }

@@ -1,8 +1,6 @@
 import {
-  getAdminSecret,
-  readBearer,
+  readAdminSession,
   sendJson,
-  verifySignedToken,
 } from './_security.js';
 
 export default async function handler(req, res) {
@@ -10,10 +8,8 @@ export default async function handler(req, res) {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
-  const secret = getAdminSecret();
-  const payload = verifySignedToken(readBearer(req), secret);
-
-  if (!payload || payload.typ !== 'admin') {
+  const payload = readAdminSession(req);
+  if (!payload) {
     return sendJson(res, 401, { valid: false });
   }
 

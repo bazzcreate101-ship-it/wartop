@@ -1,17 +1,14 @@
+import { logError } from '../server/logger.js';
+import { mutateStateRows, readStateRows, writeStateRows } from '../server/stateStore.js';
 import {
   cleanText,
   clampArray,
-  getAdminSecret,
-  readBearer,
   getClientIp,
   rateLimit,
+  readAdminSession,
+  readUserSession,
   sendJson,
-  verifySignedToken,
 } from './_security.js';
-
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const TABLE_NAME = 'wartop_app_state';
 
 const ALLOWED_KEYS = new Set([
   'wartop_transactions',
@@ -31,28 +28,17 @@ const ADMIN_ONLY_KEYS = new Set([
   'wartop_transaction_deletions',
   'wartop_blocked_users',
   'wartop_products',
+  'wartop_chat_messages',
   'wartop_chat_admin_mode',
   'wartop_chat_active_admin',
+]);
+
+const USER_SCOPED_KEYS = new Set([
+  'wartop_transactions',
+  'wartop_users',
   'wartop_wallet_ledger',
   'wartop_wallet_withdrawals',
 ]);
-
-function isConfigured() {
-  return Boolean(SUPABASE_URL && SERVICE_ROLE_KEY);
-}
-
-function supabaseRestUrl(path = '') {
-  return `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${TABLE_NAME}${path}`;
-}
-
-function headers(extra = {}) {
-  return {
-    apikey: SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-    'Content-Type': 'application/json',
-    ...extra,
-  };
-}
 
 function sanitizeKey(key) {
   const cleaned = cleanText(key, 80);
@@ -193,16 +179,7 @@ async function writeRowsRaw(rows) {
     key: row.key,
     value: row.value === undefined ? null : JSON.parse(JSON.stringify(row.value ?? null)),
   }));
-  const response = await fetch(supabaseRestUrl('?on_conflict=key'), {
-    method: 'POST',
-    headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
-    body: JSON.stringify(cleanRows),
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`Supabase state write failed: ${response.status} ${cleanText(detail, 140)}`);
-  }
+  await writeStateRows(cleanRows);
 }
 
 function mergeUsers(existingUsers, incomingUsers) {
@@ -227,6 +204,17 @@ function mergeUsers(existingUsers, incomingUsers) {
     });
   });
   return Array.from(usersByEmail.values()).slice(0, 1000);
+}
+
+function mergeRecordsById(existingRecords, incomingRecords, maxItems = 1000) {
+  const byId = new Map();
+  [...(Array.isArray(existingRecords) ? existingRecords : []), ...(Array.isArray(incomingRecords) ? incomingRecords : [])]
+    .forEach((item) => {
+      const id = cleanText(item?.id || '', 160);
+      if (!id) return;
+      byId.set(id, { ...(byId.get(id) || {}), ...item, id });
+    });
+  return Array.from(byId.values()).slice(-maxItems);
 }
 
 function transactionTime(transaction) {
@@ -468,21 +456,10 @@ function mergeChatThreads(existingThreads = [], incomingThreads = []) {
 
 async function readState(keys) {
   const selectedKeys = keys.length > 0 ? keys : Array.from(ALLOWED_KEYS);
-  const encodedKeys = selectedKeys.map((key) => `"${key.replace(/"/g, '\\"')}"`).join(',');
-  const response = await fetch(supabaseRestUrl(`?select=key,value,updated_at&key=in.(${encodedKeys})`), {
-    method: 'GET',
-    headers: headers(),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Supabase state read failed: ${response.status}`);
-  }
-
-  const rows = await response.json();
-  const state = rows.reduce((acc, row) => {
-    if (sanitizeKey(row.key)) acc[row.key] = row.value;
-    return acc;
-  }, {});
+  const rawState = await readStateRows(selectedKeys);
+  const state = Object.fromEntries(
+    Object.entries(rawState).filter(([key]) => sanitizeKey(key)),
+  );
 
   const healedRows = [];
   Object.keys(state).forEach((key) => {
@@ -501,38 +478,138 @@ async function readState(keys) {
 }
 
 async function writeState(updates) {
-  const nextUpdates = { ...updates };
-  let transactionDeletions = [];
-  if (Array.isArray(nextUpdates.wartop_transaction_deletions)) {
-    const existing = await readState(['wartop_transaction_deletions']);
-    nextUpdates.wartop_transaction_deletions = mergeTransactionDeletions(existing.wartop_transaction_deletions, nextUpdates.wartop_transaction_deletions);
-    transactionDeletions = nextUpdates.wartop_transaction_deletions;
-  } else if (Array.isArray(nextUpdates.wartop_transactions)) {
-    const existing = await readState(['wartop_transaction_deletions']);
-    transactionDeletions = Array.isArray(existing.wartop_transaction_deletions) ? existing.wartop_transaction_deletions : [];
-  }
-  if (Array.isArray(nextUpdates.wartop_transactions)) {
-    const existing = await readState(['wartop_transactions']);
-    nextUpdates.wartop_transactions = mergeTransactions(existing.wartop_transactions, nextUpdates.wartop_transactions, transactionDeletions);
-  }
-  if (Array.isArray(nextUpdates.wartop_users)) {
-    const existing = await readState(['wartop_users']);
-    nextUpdates.wartop_users = mergeUsers(existing.wartop_users, nextUpdates.wartop_users);
-  }
-  if (Array.isArray(nextUpdates.wartop_chat_threads)) {
-    const existing = await readState(['wartop_chat_threads']);
-    nextUpdates.wartop_chat_threads = mergeChatThreads(existing.wartop_chat_threads, nextUpdates.wartop_chat_threads);
-  }
+  const incomingKeys = Object.keys(updates || {}).map(sanitizeKey).filter(Boolean);
+  if (incomingKeys.length === 0) return 0;
+  const lockKeys = Array.from(new Set([
+    ...incomingKeys,
+    ...(incomingKeys.includes('wartop_transactions') ? ['wartop_transaction_deletions'] : []),
+    ...(incomingKeys.includes('wartop_transaction_deletions') ? ['wartop_transactions'] : []),
+  ]));
 
-  const rows = Object.entries(nextUpdates)
-    .map(([key, value]) => ({ key: sanitizeKey(key), value: sanitizeValue(value) }))
-    .filter((row) => row.key);
+  return mutateStateRows(lockKeys, (existing) => {
+    const nextUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([key]) => sanitizeKey(key)),
+    );
+    let transactionDeletions = Array.isArray(existing.wartop_transaction_deletions)
+      ? existing.wartop_transaction_deletions
+      : [];
+    if (Array.isArray(nextUpdates.wartop_transaction_deletions)) {
+      nextUpdates.wartop_transaction_deletions = mergeTransactionDeletions(
+        transactionDeletions,
+        nextUpdates.wartop_transaction_deletions,
+      );
+      transactionDeletions = nextUpdates.wartop_transaction_deletions;
+    }
+    if (Array.isArray(nextUpdates.wartop_transactions)) {
+      nextUpdates.wartop_transactions = mergeTransactions(
+        existing.wartop_transactions,
+        nextUpdates.wartop_transactions,
+        transactionDeletions,
+      );
+    }
+    if (Array.isArray(nextUpdates.wartop_users)) {
+      nextUpdates.wartop_users = mergeUsers(existing.wartop_users, nextUpdates.wartop_users);
+    }
+    if (Array.isArray(nextUpdates.wartop_chat_threads)) {
+      nextUpdates.wartop_chat_threads = mergeChatThreads(
+        existing.wartop_chat_threads,
+        nextUpdates.wartop_chat_threads,
+      );
+    }
+    if (Array.isArray(nextUpdates.wartop_wallet_ledger)) {
+      nextUpdates.wartop_wallet_ledger = mergeRecordsById(
+        existing.wartop_wallet_ledger,
+        nextUpdates.wartop_wallet_ledger,
+        1000,
+      );
+    }
+    if (Array.isArray(nextUpdates.wartop_wallet_withdrawals)) {
+      nextUpdates.wartop_wallet_withdrawals = mergeRecordsById(
+        existing.wartop_wallet_withdrawals,
+        nextUpdates.wartop_wallet_withdrawals,
+        500,
+      );
+    }
 
-  if (rows.length === 0) return 0;
+    return Object.entries(nextUpdates)
+      .map(([key, value]) => ({ key: sanitizeKey(key), value: sanitizeValue(value) }))
+      .filter((row) => row.key);
+  });
+}
 
-  await writeRowsRaw(rows);
+function normalizeEmail(value) {
+  return cleanText(value || '', 160).toLowerCase();
+}
 
-  return rows.length;
+function guestThreadId(req) {
+  const guestId = cleanText(req.headers['x-wartop-guest-id'] || '', 160);
+  return guestId ? `guest:${guestId}` : '';
+}
+
+function filterStateForViewer(state, { admin, user, guestId }) {
+  if (admin) return state;
+  const email = normalizeEmail(user?.email);
+  const transactions = Array.isArray(state.wartop_transactions)
+    ? state.wartop_transactions.filter((item) => normalizeEmail(item?.userEmail) === email && email)
+    : [];
+  const invoiceIds = new Set(transactions.map((item) => cleanText(item?.invoiceId || '', 100)).filter(Boolean));
+  const result = {};
+
+  Object.entries(state).forEach(([key, value]) => {
+    if (key === 'wartop_products' || key === 'wartop_chat_admin_mode' || key === 'wartop_chat_active_admin') {
+      result[key] = value;
+    } else if (key === 'wartop_transactions') {
+      result[key] = transactions;
+    } else if (key === 'wartop_transaction_deletions') {
+      result[key] = (Array.isArray(value) ? value : []).filter((item) => invoiceIds.has(cleanText(item?.invoiceId || '', 100)));
+    } else if (key === 'wartop_users') {
+      result[key] = (Array.isArray(value) ? value : []).filter((item) => normalizeEmail(item?.email) === email && email);
+    } else if (key === 'wartop_blocked_users') {
+      result[key] = (Array.isArray(value) ? value : []).filter((item) => normalizeEmail(item?.email || item) === email && email);
+    } else if (key === 'wartop_wallet_ledger' || key === 'wartop_wallet_withdrawals') {
+      result[key] = (Array.isArray(value) ? value : []).filter((item) => normalizeEmail(item?.userEmail) === email && email);
+    } else if (key === 'wartop_chat_threads') {
+      result[key] = (Array.isArray(value) ? value : []).filter((thread) => (
+        (email && normalizeEmail(thread?.userEmail) === email) ||
+        (guestId && cleanText(thread?.id || '', 160) === guestId)
+      ));
+    } else if (key === 'wartop_chat_messages') {
+      result[key] = [];
+    }
+  });
+  return result;
+}
+
+function scopeUpdatesForViewer(updates, { admin, user, guestId }) {
+  if (admin) return updates;
+  const email = normalizeEmail(user?.email);
+  const scoped = {};
+
+  for (const [key, value] of Object.entries(updates || {})) {
+    const safeKey = sanitizeKey(key);
+    if (!safeKey || ADMIN_ONLY_KEYS.has(safeKey)) continue;
+    if (USER_SCOPED_KEYS.has(safeKey) && !email) continue;
+
+    if (safeKey === 'wartop_transactions') {
+      scoped[safeKey] = (Array.isArray(value) ? value : [])
+        .filter((item) => normalizeEmail(item?.userEmail) === email)
+        .map((item) => ({ ...item, userEmail: email }));
+    } else if (safeKey === 'wartop_users') {
+      scoped[safeKey] = (Array.isArray(value) ? value : [])
+        .filter((item) => normalizeEmail(item?.email) === email)
+        .map((item) => ({ ...item, email }));
+    } else if (safeKey === 'wartop_wallet_ledger' || safeKey === 'wartop_wallet_withdrawals') {
+      scoped[safeKey] = (Array.isArray(value) ? value : [])
+        .filter((item) => normalizeEmail(item?.userEmail) === email)
+        .map((item) => ({ ...item, userEmail: email }));
+    } else if (safeKey === 'wartop_chat_threads') {
+      scoped[safeKey] = (Array.isArray(value) ? value : []).filter((thread) => (
+        (email && normalizeEmail(thread?.userEmail) === email) ||
+        (guestId && cleanText(thread?.id || '', 160) === guestId)
+      ));
+    }
+  }
+  return scoped;
 }
 
 export default async function handler(req, res) {
@@ -547,51 +624,53 @@ export default async function handler(req, res) {
     return sendJson(res, 429, { error: 'Terlalu banyak sinkronisasi. Coba lagi sebentar.' });
   }
 
-  if (!isConfigured()) {
-    return sendJson(res, 503, {
-      ok: false,
-      disabled: true,
-      error: 'Cloud state belum dikonfigurasi.',
-    });
-  }
-
   try {
+    const admin = readAdminSession(req);
+    const user = readUserSession(req);
+    const guestId = guestThreadId(req);
     if (req.method === 'GET') {
       const requestUrl = new URL(req.url || '/api/cloud-state', `https://${req.headers.host || 'wartop.shop'}`);
       const rawKeys = String(req.query?.keys || requestUrl.searchParams.get('keys') || '')
         .split(',')
         .map(sanitizeKey)
         .filter(Boolean);
-      const state = await readState(rawKeys);
-      return sendJson(res, 200, { ok: true, state });
+      const selectedKeys = !admin && rawKeys.includes('wartop_transaction_deletions')
+        ? Array.from(new Set([...rawKeys, 'wartop_transactions']))
+        : rawKeys;
+      const state = filterStateForViewer(await readState(selectedKeys), { admin, user, guestId });
+      const responseState = rawKeys.length > 0
+        ? Object.fromEntries(Object.entries(state).filter(([key]) => rawKeys.includes(key)))
+        : state;
+      return sendJson(res, 200, { ok: true, state: responseState });
     }
 
     const body = typeof req.body === 'string'
       ? JSON.parse(req.body || '{}')
       : (req.body || {});
-    const updates = body.updates && typeof body.updates === 'object'
+    const incomingUpdates = body.updates && typeof body.updates === 'object'
       ? body.updates
       : { [body.key]: body.value };
-    const updateKeys = Object.keys(updates || {}).map(sanitizeKey).filter(Boolean);
+    const updateKeys = Object.keys(incomingUpdates || {}).map(sanitizeKey).filter(Boolean);
     const requiresAdmin = updateKeys.some((key) => ADMIN_ONLY_KEYS.has(key));
 
-    if (requiresAdmin) {
-      const payload = verifySignedToken(readBearer(req), getAdminSecret());
-      if (!payload || payload.typ !== 'admin') {
+    if (requiresAdmin && !admin) {
         return sendJson(res, 401, {
           ok: false,
           error: 'Unauthorized',
         });
-      }
     }
 
+    const updates = scopeUpdatesForViewer(incomingUpdates, { admin, user, guestId });
+    if (Object.keys(updates).length === 0 && updateKeys.length > 0) {
+      return sendJson(res, 401, { ok: false, error: 'Unauthorized' });
+    }
     const written = await writeState(updates);
     return sendJson(res, 200, { ok: true, written });
   } catch (error) {
+    logError({ endpoint: '/api/cloud-state', status: 500, category: 'state_store', error });
     return sendJson(res, 500, {
       ok: false,
       error: 'Cloud state gagal diproses.',
-      detail: cleanText(error.message, 180),
     });
   }
 }

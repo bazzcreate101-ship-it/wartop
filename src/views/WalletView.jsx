@@ -76,7 +76,7 @@ export default function WalletView({ user, onNavigate }) {
 
     const fee = qrisFee(amount);
     const total = amount + fee;
-    const invoiceId = 'GSI-WALLET-' + Date.now().toString().slice(-8).toUpperCase();
+    const invoiceId = 'WTP-WALLET-' + Date.now().toString().slice(-8).toUpperCase();
     const createdAtIso = new Date().toISOString();
     const invoiceData = {
       invoiceId,

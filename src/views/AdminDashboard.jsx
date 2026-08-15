@@ -48,7 +48,6 @@ const initialCategories = [
 const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
 const formatNumber = (num) => new Intl.NumberFormat('id-ID').format(Number(num || 0));
 const cleanAdminText = (value, limit = 160) => String(value ?? '').trim().replace(/[<>`{}]/g, '').slice(0, limit);
-const ADMIN_TOKEN_KEY = 'wartop_admin_token';
 const makeAdminMessageId = (prefix = 'msg') => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 const CHAT_SYNC_KEYS = ['wartop_chat_threads'];
 const ADMIN_CHAT_LIST_LIMIT = 60;
@@ -124,11 +123,8 @@ function formatTrafficHour(hour) {
 }
 
 async function fetchAuthUsersForAdmin() {
-  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
-  if (!token) return [];
-
   const response = await fetch('/api/admin-users', {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'same-origin',
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.ok) return [];
@@ -229,13 +225,11 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
 
     let isMounted = true;
     const loadTraffic = async () => {
-      const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
-      if (!token) return;
       setTrafficLoading(true);
       setTrafficError('');
       try {
         const response = await fetch('/api/traffic', {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'same-origin',
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.ok) {

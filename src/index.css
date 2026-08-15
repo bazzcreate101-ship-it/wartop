@@ -4277,6 +4277,13 @@ a {
   border-color: var(--brand-cyan) !important;
 }
 
+.alert-success {
+  --bs-alert-color: #a6efff;
+  --bs-alert-bg: rgba(20, 108, 255, 0.12);
+  --bs-alert-border-color: rgba(17, 217, 245, 0.34);
+  --bs-alert-link-color: #d9f8ff;
+}
+
 .form-control:focus,
 .form-select:focus,
 .form-check-input:focus {

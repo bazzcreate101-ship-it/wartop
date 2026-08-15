@@ -6,7 +6,6 @@ import Footer from './components/Footer';
 import SeoManager from './components/SeoManager';
 import HomeView from './views/HomeView';
 import { products as initialProducts } from './data/products';
-import { supabase } from './lib/supabaseClient';
 import {
   findTransactionByInvoiceId,
   normalizeStoredProducts,
@@ -18,7 +17,6 @@ import { trackTrafficView } from './lib/trafficTracker';
 import { getAccountBlock, isAccountBlocked } from './lib/accountBlocks';
 import { upsertUserActivity } from './lib/userActivity';
 
-const ADMIN_TOKEN_KEY = 'wartop_admin_token';
 const OrderView = React.lazy(() => import('./views/OrderView'));
 const InvoiceView = React.lazy(() => import('./views/InvoiceView'));
 const TransactionsView = React.lazy(() => import('./views/TransactionsView'));
@@ -108,6 +106,7 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [sessionChecking, setSessionChecking] = useState(true);
   const [adminUser, setAdminUser] = useState(null);
   const [adminChecking, setAdminChecking] = useState(() => initialRoute.view === 'admin');
   const [blockedNotice, setBlockedNotice] = useState('');
@@ -119,49 +118,34 @@ function App() {
   });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        if (isAccountBlocked(session.user.email)) {
-          const block = getAccountBlock(session.user.email);
-          setBlockedNotice(block?.reason || 'Akun ini sedang dibatasi oleh admin.');
-          supabase.auth.signOut();
+    let cancelled = false;
+    const loadSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+        const data = await response.json().catch(() => ({}));
+        if (cancelled) return;
+        if (response.status === 403 && data.blocked) {
+          setBlockedNotice(data.error || 'Akun ini sedang dibatasi oleh admin.');
           setUser(null);
-          return;
-        }
-        setUser({
-          name: session.user.user_metadata.full_name || session.user.email,
-          email: session.user.email,
-          picture: session.user.user_metadata.avatar_url || null,
-          registeredAtIso: session.user.created_at || '',
-        });
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        if (isAccountBlocked(session.user.email)) {
-          const block = getAccountBlock(session.user.email);
-          setBlockedNotice(block?.reason || 'Akun ini sedang dibatasi oleh admin.');
-          supabase.auth.signOut();
+        } else if (response.ok && data.authenticated && data.user) {
+          setUser(data.user);
+        } else {
           setUser(null);
-          return;
         }
-        setUser({
-          name: session.user.user_metadata.full_name || session.user.email,
-          email: session.user.email,
-          picture: session.user.user_metadata.avatar_url || null,
-          registeredAtIso: session.user.created_at || '',
-        });
-        if (isAdminUrl()) return;
-        if (window.location.hash.startsWith('#access_token=')) {
-          window.history.replaceState({}, '', '/');
+      } catch {
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setSessionChecking(false);
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('auth') || url.searchParams.has('authError')) {
+          url.searchParams.delete('auth');
+          url.searchParams.delete('authError');
+          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
         }
-      } else {
-        setUser(null);
       }
-    });
-
-    return () => subscription.unsubscribe();
+    };
+    loadSession();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -171,7 +155,7 @@ function App() {
       if (!isAccountBlocked(user.email)) return;
       const block = getAccountBlock(user.email);
       setBlockedNotice(block?.reason || 'Akun ini sedang dibatasi oleh admin.');
-      supabase.auth.signOut();
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
       setUser(null);
       setCurrentView('home');
       pushCleanRoute('home');
@@ -231,27 +215,18 @@ function App() {
   }, [user]);
 
   const verifyAdminSession = async () => {
-    const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
-    if (!token) {
-      setAdminUser(null);
-      setAdminChecking(false);
-      return;
-    }
-
     setAdminChecking(true);
     try {
       const response = await fetch('/api/admin-verify', {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'same-origin',
       });
       const data = await response.json();
       if (!response.ok || !data.valid) {
-        sessionStorage.removeItem(ADMIN_TOKEN_KEY);
         setAdminUser(null);
         return;
       }
       setAdminUser(data.admin);
     } catch {
-      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
       setAdminUser(null);
     } finally {
       setAdminChecking(false);
@@ -279,6 +254,7 @@ function App() {
       }
 
       if (['transactions', 'wallet'].includes(route.view)) {
+        if (sessionChecking) return;
         if (!user) {
           setCurrentView('home');
           setIsLoginOpen(true);
@@ -326,7 +302,7 @@ function App() {
       window.removeEventListener('hashchange', checkUrl);
       window.removeEventListener('popstate', checkUrl);
     };
-  }, [user]);
+  }, [user, sessionChecking]);
 
   useEffect(() => {
     trackTrafficView();
@@ -350,18 +326,17 @@ function App() {
       upsertUserActivity(user, 'logout');
       sessionStorage.removeItem(`wartop_login_seen:${user.email}`);
     }
-    await supabase.auth.signOut();
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
     setUser(null);
   };
 
-  const handleAdminLogin = (admin, token) => {
-    sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+  const handleAdminLogin = (admin) => {
     setAdminUser(admin);
     setAdminChecking(false);
   };
 
-  const handleAdminLogout = () => {
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  const handleAdminLogout = async () => {
+    await fetch('/api/admin-logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
     setAdminUser(null);
     setCurrentView('home');
     window.location.href = '/';
@@ -442,6 +417,15 @@ function App() {
   };
 
   const handleSelectProduct = (productId) => handleNavigate('order', productId);
+
+  if (sessionChecking && ['transactions', 'wallet'].includes(currentView)) {
+    return (
+      <div className="main main-surface d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
+        <div className="text-success fw-bold">Memverifikasi sesi...</div>
+      </div>
+    );
+  }
+
   if (currentView === 'admin') {
     if (adminChecking) {
       return (

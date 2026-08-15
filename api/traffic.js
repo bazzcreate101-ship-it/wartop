@@ -1,38 +1,20 @@
 import crypto from 'node:crypto';
+import { logError } from '../server/logger.js';
+import { mutateStateRows, readStateRows } from '../server/stateStore.js';
 import {
   cleanText,
   getAdminSecret,
   getClientIp,
+  getUserSecret,
   rateLimit,
-  readBearer,
+  readAdminSession,
   sendJson,
-  verifySignedToken,
 } from './_security.js';
-
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const TABLE_NAME = 'wartop_app_state';
 const TRAFFIC_KEY = 'wartop_traffic_hourly';
 const RETENTION_HOURS = 72;
 const MAX_DEVICE_IDS_PER_HOUR = 5000;
 const MAX_KNOWN_DEVICES = 20000;
-
-function isConfigured() {
-  return Boolean(SUPABASE_URL && SERVICE_ROLE_KEY);
-}
-
-function supabaseRestUrl(path = '') {
-  return `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${TABLE_NAME}${path}`;
-}
-
-function headers(extra = {}) {
-  return {
-    apikey: SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-    'Content-Type': 'application/json',
-    ...extra,
-  };
-}
+const EPHEMERAL_TRAFFIC_SECRET = crypto.randomBytes(32).toString('hex');
 
 function emptyTrafficState() {
   return {
@@ -52,26 +34,14 @@ function emptyTrafficState() {
 }
 
 async function readTrafficState() {
-  const response = await fetch(supabaseRestUrl(`?select=key,value&key=eq.${encodeURIComponent(TRAFFIC_KEY)}&limit=1`), {
-    method: 'GET',
-    headers: headers(),
-  });
-  if (!response.ok) throw new Error(`Traffic read failed: ${response.status}`);
-  const rows = await response.json();
-  return rows[0]?.value && typeof rows[0].value === 'object' ? rows[0].value : emptyTrafficState();
-}
-
-async function writeTrafficState(value) {
-  const response = await fetch(supabaseRestUrl('?on_conflict=key'), {
-    method: 'POST',
-    headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
-    body: JSON.stringify([{ key: TRAFFIC_KEY, value }]),
-  });
-  if (!response.ok) throw new Error(`Traffic write failed: ${response.status}`);
+  const state = await readStateRows([TRAFFIC_KEY]);
+  return state[TRAFFIC_KEY] && typeof state[TRAFFIC_KEY] === 'object'
+    ? state[TRAFFIC_KEY]
+    : emptyTrafficState();
 }
 
 function hashDeviceId(deviceId) {
-  const secret = getAdminSecret() || SERVICE_ROLE_KEY || 'wartop-traffic';
+  const secret = process.env.TRAFFIC_HASH_SECRET || getAdminSecret() || getUserSecret() || EPHEMERAL_TRAFFIC_SECRET;
   return crypto.createHmac('sha256', secret)
     .update(cleanText(deviceId, 120))
     .digest('hex')
@@ -264,14 +234,9 @@ export default async function handler(req, res) {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
-  if (!isConfigured()) {
-    return sendJson(res, 503, { ok: false, disabled: true, error: 'Traffic analytics belum dikonfigurasi.' });
-  }
-
   try {
     if (req.method === 'GET') {
-      const payload = verifySignedToken(readBearer(req), getAdminSecret());
-      if (!payload || payload.typ !== 'admin') return sendJson(res, 401, { ok: false, error: 'Unauthorized' });
+      if (!readAdminSession(req)) return sendJson(res, 401, { ok: false, error: 'Unauthorized' });
       const state = pruneState(await readTrafficState());
       return sendJson(res, 200, summarize(state));
     }
@@ -287,20 +252,27 @@ export default async function handler(req, res) {
     const deviceId = cleanText(body.deviceId, 120);
     if (!deviceId || deviceId.length < 12) return sendJson(res, 400, { ok: false, error: 'deviceId tidak valid.' });
 
-    const state = await readTrafficState();
-    const nextState = updateTrafficState(state, {
-      deviceId,
-      sessionId: cleanText(body.sessionId, 120),
-      path: body.path,
-      screen: body.screen,
-    }, req);
-    await writeTrafficState(nextState);
+    await mutateStateRows([TRAFFIC_KEY], (state) => [{
+      key: TRAFFIC_KEY,
+      value: updateTrafficState(
+        state[TRAFFIC_KEY] && typeof state[TRAFFIC_KEY] === 'object'
+          ? state[TRAFFIC_KEY]
+          : emptyTrafficState(),
+        {
+          deviceId,
+          sessionId: cleanText(body.sessionId, 120),
+          path: body.path,
+          screen: body.screen,
+        },
+        req,
+      ),
+    }]);
     return sendJson(res, 200, { ok: true });
   } catch (error) {
+    logError({ endpoint: '/api/traffic', status: 500, category: 'traffic_store', error });
     return sendJson(res, 500, {
       ok: false,
       error: 'Traffic analytics gagal diproses.',
-      detail: cleanText(error.message, 180),
     });
   }
 }

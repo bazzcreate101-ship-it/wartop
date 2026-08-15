@@ -1,16 +1,26 @@
 {
   "name": "wartop",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
+    "dev:server": "node --watch server.js",
     "build": "vite build",
-    "lint": "oxlint src api",
-    "preview": "vite preview"
+    "start": "node server.js",
+    "lint": "oxlint src api server server.js scripts",
+    "preview": "vite preview",
+    "import:supabase": "node scripts/import-supabase-data.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.111.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "mysql2": "^3.23.3",
     "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

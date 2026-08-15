@@ -24,6 +24,7 @@ export default function AdminLogin({ onLogin }) {
       const response = await fetch('/api/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ name, password })
       });
       const data = await response.json();
@@ -35,7 +36,7 @@ export default function AdminLogin({ onLogin }) {
         throw new Error(data.error || 'Login admin gagal.');
       }
 
-      onLogin(data.admin, data.token);
+      onLogin(data.admin);
       setPassword('');
     } catch (err) {
       setError(err.message || 'Login admin gagal.');

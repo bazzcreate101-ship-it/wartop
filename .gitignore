@@ -9,9 +9,11 @@ lerna-debug.log*
 
 node_modules
 dist
-.codex-stamp-assets-*
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*

@@ -12,17 +12,6 @@ export const CLOUD_STATE_KEYS = [
   'wartop_wallet_withdrawals',
 ];
 
-const ADMIN_TOKEN_KEY = 'wartop_admin_token';
-const ADMIN_ONLY_CLOUD_KEYS = new Set([
-  'wartop_transaction_deletions',
-  'wartop_blocked_users',
-  'wartop_products',
-  'wartop_chat_admin_mode',
-  'wartop_chat_active_admin',
-  'wartop_wallet_ledger',
-  'wartop_wallet_withdrawals',
-]);
-
 const pendingWrites = new Map();
 let flushTimer = null;
 let cloudSyncEnabled = true;
@@ -49,6 +38,11 @@ function writeLocalValue(key, value) {
     return;
   }
   localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+}
+
+function identityHeaders() {
+  const guestId = typeof window !== 'undefined' ? localStorage.getItem('wartop_guest_chat_id') : '';
+  return guestId ? { 'X-Wartop-Guest-Id': guestId } : {};
 }
 
 function mergeUsers(localUsers, cloudUsers) {
@@ -337,13 +331,13 @@ export function notifyLocalStateChanged() {
 async function postCloudState(updates) {
   if (!cloudSyncEnabled || !updates || Object.keys(updates).length === 0) return false;
   try {
-    const token = typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_TOKEN_KEY) : '';
     const response = await fetch('/api/cloud-state', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...identityHeaders(),
       },
+      credentials: 'same-origin',
       body: JSON.stringify({ updates }),
     });
     if (response.status === 503) cloudSyncEnabled = false;
@@ -355,7 +349,6 @@ async function postCloudState(updates) {
 
 export function queueCloudStateWrite(key, value) {
   if (!CLOUD_STATE_KEYS.includes(key)) return;
-  if (ADMIN_ONLY_CLOUD_KEYS.has(key) && !sessionStorage.getItem(ADMIN_TOKEN_KEY)) return;
   pendingWrites.set(key, value);
   if (flushTimer) clearTimeout(flushTimer);
   flushTimer = setTimeout(() => {
@@ -371,7 +364,8 @@ export async function hydrateCloudState() {
   try {
     const response = await fetch(`/api/cloud-state?keys=${encodeURIComponent(CLOUD_STATE_KEYS.join(','))}`, {
       method: 'GET',
-      headers: { Accept: 'application/json' },
+      headers: { Accept: 'application/json', ...identityHeaders() },
+      credentials: 'same-origin',
     });
     const data = await response.json().catch(() => ({}));
 
@@ -415,7 +409,8 @@ export async function hydrateCloudStateKeys(keys) {
   try {
     const response = await fetch(`/api/cloud-state?keys=${encodeURIComponent(selectedKeys.join(','))}`, {
       method: 'GET',
-      headers: { Accept: 'application/json' },
+      headers: { Accept: 'application/json', ...identityHeaders() },
+      credentials: 'same-origin',
     });
     const data = await response.json().catch(() => ({}));
     if (response.status === 503 || data.disabled) {

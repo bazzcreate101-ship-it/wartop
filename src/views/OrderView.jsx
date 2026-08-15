@@ -122,7 +122,7 @@ export default function OrderView({ productId, products, onNavigate, user, onLog
     setIsSubmitting(true);
     // Small delay to simulate request
     setTimeout(() => {
-      const invoiceId = 'GSI-' + Date.now().toString().slice(-8).toUpperCase();
+      const invoiceId = 'WTP-' + Date.now().toString().slice(-8).toUpperCase();
       const total = calcTotal();
       const isWalletPayment = selectedPayment.id === 'wartop_balance';
       const createdAtIso = new Date().toISOString();

@@ -1,6 +1,10 @@
 import crypto from 'node:crypto';
 
 const buckets = new Map();
+export const ADMIN_SESSION_COOKIE = 'wartop_admin_session';
+export const USER_SESSION_COOKIE = 'wartop_user_session';
+export const OAUTH_STATE_COOKIE = 'wartop_oauth_state';
+
 export function sendJson(res, statusCode, payload) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -18,6 +22,18 @@ export function getClientIp(req) {
 
 export function rateLimit({ key, limit, windowMs }) {
   const now = Date.now();
+
+  if (buckets.size > 5000) {
+    for (const [bucketKey, bucketValue] of buckets) {
+      if (now > bucketValue.resetAt) buckets.delete(bucketKey);
+    }
+    while (buckets.size > 4000) {
+      const oldestKey = buckets.keys().next().value;
+      if (oldestKey === undefined) break;
+      buckets.delete(oldestKey);
+    }
+  }
+
   const bucket = buckets.get(key) || { count: 0, resetAt: now + windowMs };
 
   if (now > bucket.resetAt) {
@@ -80,13 +96,74 @@ export function verifySignedToken(token, secret) {
 }
 
 export function getAdminSecret() {
-  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || '';
+  return process.env.ADMIN_SESSION_SECRET || '';
+}
+
+export function getUserSecret() {
+  return process.env.USER_SESSION_SECRET || '';
 }
 
 export function readBearer(req) {
   const header = req.headers.authorization || '';
   if (!header.startsWith('Bearer ')) return '';
   return header.slice('Bearer '.length).trim();
+}
+
+export function getCookie(req, name) {
+  if (req.cookies && typeof req.cookies[name] === 'string') return req.cookies[name];
+  const header = String(req.headers?.cookie || '');
+  const pair = header.split(';').map((item) => item.trim()).find((item) => item.startsWith(`${name}=`));
+  if (!pair) return '';
+  try {
+    return decodeURIComponent(pair.slice(name.length + 1));
+  } catch {
+    return '';
+  }
+}
+
+function isSecureRequest(req) {
+  if (process.env.NODE_ENV === 'production') return true;
+  return Boolean(req.secure || String(req.headers?.['x-forwarded-proto'] || '').split(',')[0].trim() === 'https');
+}
+
+export function setHttpOnlyCookie(req, res, name, value, maxAgeMs) {
+  const options = {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isSecureRequest(req),
+    path: '/',
+    maxAge: maxAgeMs,
+  };
+  if (typeof res.cookie === 'function') {
+    res.cookie(name, value, options);
+    return;
+  }
+  const attributes = [
+    `${name}=${encodeURIComponent(value)}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    `Max-Age=${Math.max(0, Math.floor(maxAgeMs / 1000))}`,
+    ...(options.secure ? ['Secure'] : []),
+  ];
+  const existing = res.getHeader('Set-Cookie');
+  const cookies = Array.isArray(existing) ? existing : existing ? [existing] : [];
+  res.setHeader('Set-Cookie', [...cookies, attributes.join('; ')]);
+}
+
+export function clearHttpOnlyCookie(req, res, name) {
+  setHttpOnlyCookie(req, res, name, '', 0);
+}
+
+export function readAdminSession(req) {
+  const token = getCookie(req, ADMIN_SESSION_COOKIE) || readBearer(req);
+  const payload = verifySignedToken(token, getAdminSecret());
+  return payload?.typ === 'admin' ? payload : null;
+}
+
+export function readUserSession(req) {
+  const payload = verifySignedToken(getCookie(req, USER_SESSION_COOKIE), getUserSecret());
+  return payload?.typ === 'user' ? payload : null;
 }
 
 export function cleanText(value, maxLength = 1000) {
