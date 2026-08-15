@@ -1,0 +1,102 @@
+const aiImage = (slug) => `/gassets/ai/${slug}.webp`;
+
+export const aiDenominations = [
+  {
+    id: 'ai-chatgpt-go-3-bulan',
+    name: 'ChatGPT Go 3 Bulan',
+    originalPrice: 25000,
+    price: 26000,
+    points: 26,
+    stock: 6,
+    accessType: 'Private',
+    sourceTitle: 'CHATGPT GO 3 BULAN',
+    duration: '3 bulan',
+    warranty: 'Garansi penuh',
+    image: aiImage('chatgpt-go-3-bulan'),
+    description: 'Akses ChatGPT Go selama 3 bulan untuk chat AI, ide konten, belajar, dan produktivitas harian.'
+  },
+  {
+    id: 'ai-chatgpt-plus-1-bulan-garansi-5-hari',
+    name: 'ChatGPT Plus 1 Bulan',
+    originalPrice: 42000,
+    price: 42000,
+    points: 42,
+    stock: 12,
+    accessType: 'Private',
+    sourceTitle: 'CHATGPT PLUS',
+    duration: '1 bulan',
+    warranty: 'Garansi 5 hari',
+    image: aiImage('chatgpt-plus-1-bulan-garansi-2-hari'),
+    description: 'Akun ChatGPT Plus private untuk chat AI, coding, riset, penulisan, dan bantuan kerja harian.'
+  },
+  {
+    id: 'ai-claude-pro-1-bulan',
+    name: 'Claude Pro 1 Bulan',
+    originalPrice: 115000,
+    price: 115000,
+    points: 115,
+    stock: 10,
+    accessType: 'Private',
+    sourceTitle: 'CLAUDE PRO',
+    duration: '1 bulan',
+    warranty: 'Garansi penuh',
+    image: aiImage('ai-claude-pro'),
+    description: 'Akun Claude Pro untuk penulisan panjang, analisis dokumen, coding, brainstorming, dan pekerjaan produktif.'
+  },
+  {
+    id: 'ai-claude-max-1-bulan',
+    name: 'Claude Max 1 Bulan',
+    originalPrice: 980000,
+    price: 980000,
+    points: 980,
+    stock: 8,
+    accessType: 'Private',
+    sourceTitle: 'CLAUDE MAX',
+    duration: '1 bulan',
+    warranty: 'Garansi penuh',
+    image: aiImage('ai-claude-pro'),
+    description: 'Akun Claude Max untuk pemakaian intensif dengan kapasitas lebih besar untuk riset, dokumen panjang, coding, dan workflow profesional.'
+  },
+  {
+    id: 'ai-gemini-pro-12-bulan',
+    name: 'Gemini Pro 12 Bulan',
+    originalPrice: 96000,
+    price: 96000,
+    points: 96,
+    stock: 10,
+    accessType: 'Private',
+    sourceTitle: 'GEMINI PRO',
+    duration: '12 bulan',
+    warranty: 'Garansi 1 bulan',
+    image: aiImage('ai-gemini-pro'),
+    description: 'Akses Gemini Pro 12 bulan untuk chat AI, analisis, penulisan, coding, dan produktivitas ekosistem Google.'
+  },
+  {
+    id: 'ai-gemini-pro-24-bulan',
+    name: 'Gemini Pro 24 Bulan',
+    originalPrice: 187000,
+    price: 187000,
+    points: 187,
+    stock: 9,
+    accessType: 'Private',
+    sourceTitle: 'GEMINI PRO',
+    duration: '24 bulan',
+    warranty: 'Garansi 3 bulan',
+    image: aiImage('ai-gemini-pro'),
+    description: 'Akses Gemini Pro 24 bulan untuk pemakaian jangka panjang, kerja produktif, belajar, riset, dan coding.'
+  },
+  {
+    id: 'ai-grok-plus-1-bulan',
+    name: 'Grok Plus 1 Bulan',
+    originalPrice: 47000,
+    price: 47000,
+    points: 47,
+    stock: 11,
+    accessType: 'Private',
+    sourceTitle: 'GROK PLUS',
+    duration: '1 bulan',
+    warranty: 'Garansi penuh',
+    image: aiImage('ai-grok-super'),
+    description: 'Akses Grok Plus untuk chat AI, riset cepat, ide konten, tanya jawab, dan produktivitas harian.'
+  }
+];

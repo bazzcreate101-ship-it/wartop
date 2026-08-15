@@ -1,0 +1,208 @@
+import React, { useState } from 'react';
+import { brandMark } from '../assets/images';
+
+const ADMIN_NAMES = ['Ardan', 'Sarah', 'Ardian'];
+
+export default function AdminLogin({ onLogin }) {
+  const [name, setName] = useState('Ardan');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+
+  const cooldownActive = Date.now() < cooldownUntil;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (cooldownActive) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429 || response.status === 401) {
+          setCooldownUntil(Date.now() + 1500);
+        }
+        throw new Error(data.error || 'Login admin gagal.');
+      }
+
+      onLogin(data.admin, data.token);
+      setPassword('');
+    } catch (err) {
+      setError(err.message || 'Login admin gagal.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #050b18 0%, #08152b 50%, #071426 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: "'Inter', sans-serif",
+      padding: '20px'
+    }}>
+      <div style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(32, 213, 242,0.15)',
+        borderRadius: '20px',
+        padding: '40px',
+        width: '100%',
+        maxWidth: '420px',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.5)'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '64px',
+            height: '64px',
+            background: 'linear-gradient(135deg, #20d5f2, #168bff)',
+            borderRadius: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 0 30px rgba(32, 213, 242,0.3)'
+          }}>
+            <img src={brandMark} alt="Wartop" className="admin-login-brand-mark" />
+          </div>
+          <h1 style={{
+            color: '#fff',
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            margin: 0,
+            letterSpacing: '-0.02em'
+          }}>Admin Wartop</h1>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', margin: '4px 0 0' }}>
+            Masuk ke panel kontrol
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              Login sebagai
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {ADMIN_NAMES.map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setName(n)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 0',
+                    borderRadius: '10px',
+                    border: name === n ? '2px solid #20d5f2' : '1px solid rgba(255,255,255,0.1)',
+                    background: name === n ? 'rgba(32, 213, 242,0.15)' : 'rgba(255,255,255,0.04)',
+                    color: name === n ? '#20d5f2' : 'rgba(255,255,255,0.5)',
+                    fontSize: '0.85rem',
+                    fontWeight: name === n ? 700 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+              Password
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={e => { setPassword(e.target.value); setError(''); }}
+                placeholder="Masukkan password admin"
+                required
+                autoComplete="current-password"
+                style={{
+                  width: '100%',
+                  padding: '12px 44px 12px 14px',
+                  borderRadius: '10px',
+                  border: error ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontSize: '14px'
+                }}
+              >
+                <i className={`bi bi-eye${showPass ? '-slash' : ''}`}></i>
+              </button>
+            </div>
+            {error && (
+              <p style={{ color: '#f87171', fontSize: '0.78rem', margin: '6px 0 0' }}>
+                {error}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || !password || cooldownActive}
+            style={{
+              width: '100%',
+              padding: '13px',
+              borderRadius: '10px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #20d5f2, #168bff)',
+              color: '#ffffff',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              cursor: loading || !password || cooldownActive ? 'not-allowed' : 'pointer',
+              opacity: !password || cooldownActive ? 0.5 : 1,
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            {loading ? (
+              <><span className="spinner-border spinner-border-sm" role="status"></span> Memverifikasi...</>
+            ) : (
+              <><i className="bi bi-box-arrow-in-right"></i> Masuk sebagai {name}</>
+            )}
+          </button>
+        </form>
+
+        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.75rem', marginTop: '24px', marginBottom: 0 }}>
+          Akses terbatas untuk tim Wartop
+        </p>
+      </div>
+    </div>
+  );
+}
