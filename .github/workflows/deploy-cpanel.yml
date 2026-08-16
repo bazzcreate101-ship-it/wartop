@@ -1,0 +1,126 @@
+name: Deploy Wartop to cPanel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wartop-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Verify production build
+        run: test -f dist/index.html
+
+      - name: Package production build
+        run: tar -C dist -czf dist.tar.gz .
+
+      - name: Configure SSH
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          CPANEL_SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$CPANEL_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -T 15 -p "$CPANEL_PORT" -H "$CPANEL_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload production build
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        run: |
+          set -e
+          scp -i ~/.ssh/id_rsa -P "$CPANEL_PORT" -o BatchMode=yes -o ConnectTimeout=15 \
+            dist.tar.gz \
+            "$CPANEL_USER@$CPANEL_HOST:/home/wartopsh/wartop-dist.tar.gz"
+
+      - name: Deploy on cPanel
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        run: |
+          ssh -i ~/.ssh/id_rsa -p "$CPANEL_PORT" -o BatchMode=yes -o ConnectTimeout=15 \
+            "$CPANEL_USER@$CPANEL_HOST" <<'REMOTE_DEPLOY'
+          set -e
+
+          APP=/home/wartopsh/wartop-app
+
+          cd "$APP"
+
+          source /home/wartopsh/nodevenv/wartop-app/22/bin/activate
+
+          git pull --ff-only origin main
+
+          npm install --omit=dev --no-audit --no-fund
+
+          rm -rf .deploy/dist-new
+          mkdir -p .deploy/dist-new
+
+          tar -xzf /home/wartopsh/wartop-dist.tar.gz -C .deploy/dist-new
+
+          rm -rf dist-old
+
+          if [ -d dist ]; then
+            mv dist dist-old
+          fi
+
+          mv .deploy/dist-new dist
+
+          rm -rf dist-old
+          rm -f /home/wartopsh/wartop-dist.tar.gz
+
+          mkdir -p tmp
+          touch tmp/restart.txt
+          REMOTE_DEPLOY
+
+      - name: Verify production health
+        run: |
+          set -e
+          sleep 8
+
+          for attempt in $(seq 1 10); do
+            response="$(curl --silent --show-error --max-time 15 https://wartop.shop/api/health || true)"
+            if printf '%s' "$response" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'; then
+              echo "Production health check passed on attempt $attempt."
+              exit 0
+            fi
+
+            echo "Health check attempt $attempt/10 failed. Retrying in 5 seconds..."
+            sleep 5
+          done
+
+          echo "Production health check failed after 10 attempts." >&2
+          exit 1
