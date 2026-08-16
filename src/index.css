@@ -5317,6 +5317,125 @@ a {
   box-shadow: 0 0 14px rgba(17, 217, 245, 0.52);
 }
 
+/* Wartop image banner carousel */
+.wartop-banner-wrap {
+  width: 100%;
+  max-width: 1870px;
+  margin: 0.75rem auto 1.75rem;
+  padding-inline: clamp(0.45rem, 1.5vw, 1.5rem);
+}
+
+.wartop-banner {
+  position: relative;
+  width: 100%;
+  max-width: 1810px;
+  margin-inline: auto;
+  isolation: isolate;
+}
+
+.wartop-banner__viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 1810 / 869;
+  background: #020915;
+  box-shadow: 0 26px 76px rgba(0, 34, 86, 0.3);
+}
+
+.wartop-banner__slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.65s ease, visibility 0.65s ease;
+}
+
+.wartop-banner__slide.is-active {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+}
+
+.wartop-banner__slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.wartop-banner__pagination {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: clamp(0.45rem, 1.5vw, 1.5rem);
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.38rem 0.48rem;
+  border: 1px solid rgba(74, 211, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(2, 9, 21, 0.56);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  transform: translateX(-50%);
+}
+
+.wartop-banner__pagination button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.34);
+  transition: width 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.wartop-banner__pagination button.is-active {
+  width: 28px;
+  background: linear-gradient(90deg, #146cff, #11d9f5);
+  box-shadow: 0 0 12px rgba(17, 217, 245, 0.48);
+}
+
+.wartop-banner__pagination button:focus-visible {
+  outline: 2px solid #9bf3ff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 575.98px) {
+  .wartop-banner-wrap {
+    margin-top: 0.45rem;
+    margin-bottom: 1rem;
+    padding-inline: 0.25rem;
+  }
+
+  .wartop-banner__viewport {
+    box-shadow: 0 14px 38px rgba(0, 34, 86, 0.24);
+  }
+
+  .wartop-banner__pagination {
+    bottom: 0.3rem;
+    gap: 0.28rem;
+    padding: 0.25rem 0.34rem;
+  }
+
+  .wartop-banner__pagination button {
+    width: 6px;
+    height: 6px;
+  }
+
+  .wartop-banner__pagination button.is-active {
+    width: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wartop-banner__slide,
+  .wartop-banner__pagination button {
+    transition: none;
+  }
+}
+
 /* Storefront surfaces */
 .box-menu1,
 .product-grid-heading,
