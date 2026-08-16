@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /bolehnihadmin
+Disallow: /api/
+Disallow: /invoice/
+Disallow: /transactions
+Disallow: /wallet
+Sitemap: https://wartop.shop/sitemap.xml
