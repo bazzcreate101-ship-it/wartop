@@ -4197,15 +4197,15 @@ a {
   position: relative;
   display: block;
   overflow: hidden;
-  background: #030812;
+  background: transparent;
 }
 
 .brand-wordmark-window {
   width: clamp(142px, 18vw, 194px);
   height: 48px;
-  border: 1px solid rgba(49, 211, 255, 0.12);
-  border-radius: 13px;
-  box-shadow: 0 0 24px rgba(17, 217, 245, 0.11);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .navbar-brand .img-logo,
@@ -4441,9 +4441,9 @@ a {
 .wartop-hero__wordmark-window {
   width: min(100%, 350px);
   height: 118px;
-  border: 1px solid rgba(17, 217, 245, 0.12);
-  border-radius: 24px;
-  box-shadow: 0 0 42px rgba(17, 217, 245, 0.18);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .wartop-hero__brand > span {
@@ -4557,7 +4557,7 @@ a {
 .news-card-brand-mark {
   object-fit: cover !important;
   transform: scale(1.25);
-  background: #030812;
+  background: transparent;
 }
 
 .news-card-cta,
@@ -4604,7 +4604,7 @@ footer {
   width: min(100%, 230px);
   height: 82px;
   margin: -0.8rem 0 0.7rem;
-  border-radius: 18px;
+  border-radius: 0;
 }
 
 footer a:hover,
@@ -4786,9 +4786,9 @@ footer strong {
   width: 42px;
   height: 42px;
   overflow: hidden;
-  border: 1px solid rgba(49, 211, 255, 0.2);
-  border-radius: 13px;
-  background: #030812;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .auth-modal__brand-mark img,
@@ -4808,18 +4808,18 @@ footer strong {
 }
 
 .admin-login-brand-mark {
-  border-radius: 13px;
+  border-radius: 0;
 }
 
 .chat-float-btn {
   overflow: hidden;
-  border: 1px solid rgba(121, 238, 255, 0.35);
-  background: var(--brand-gradient);
-  box-shadow: 0 16px 42px rgba(20, 108, 255, 0.42);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .chat-brand-mark {
-  border-radius: 50%;
+  border-radius: 0;
 }
 
 .chat-header {
@@ -4829,7 +4829,8 @@ footer strong {
 .chat-avatar-icon {
   overflow: hidden;
   padding: 0;
-  background: #030812;
+  border-color: transparent;
+  background: transparent;
 }
 
 .bubble-user {
