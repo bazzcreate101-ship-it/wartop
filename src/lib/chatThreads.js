@@ -4,6 +4,8 @@ export const CHAT_THREADS_KEY = 'wartop_chat_threads';
 const LEGACY_CHAT_KEY = 'wartop_chat_messages';
 const LEGACY_ADMIN_MODE_KEY = 'wartop_chat_admin_mode';
 const LEGACY_ACTIVE_ADMIN_KEY = 'wartop_chat_active_admin';
+const LEGACY_ASSISTANT_NAME = ['Vin', 'dy'].join('');
+const legacyAssistantPattern = new RegExp(`\\b${LEGACY_ASSISTANT_NAME}\\b`, 'g');
 
 export function formatChatTime(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
@@ -42,8 +44,8 @@ export function createInitialChatMessage() {
   return createChatMessage({
     id: 'init-1',
     sender: 'cs',
-    agent: 'Vindy',
-    text: 'Halo Kak! Selamat datang di Wartop. Vindy siap bantu soal produk, harga, pembayaran, promo, transaksi, dan bantuan CS.',
+    agent: 'Rena',
+    text: 'Halo Kak! Selamat datang di Wartop. Rena siap bantu cek produk, harga, stok, pembayaran, transaksi, dan bantuan CS.',
   });
 }
 
@@ -120,8 +122,8 @@ function normalizeMessage(message) {
   return {
     id: String(message?.id || `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
     sender: message?.sender === 'user' ? 'user' : message?.sender === 'system' ? 'system' : 'cs',
-    agent: message?.agent || null,
-    text: String(message?.text || '').slice(0, 1200),
+    agent: message?.agent === LEGACY_ASSISTANT_NAME ? 'Rena' : message?.agent || null,
+    text: String(message?.text || '').replace(legacyAssistantPattern, 'Rena').slice(0, 1200),
     createdAt,
     timestamp: createdAt ? formatChatTime(createdAt) : fallbackTime,
     invoiceId: message?.invoiceId ? String(message.invoiceId).slice(0, 80) : null,
@@ -436,7 +438,7 @@ export function getLatestThreadMessage(thread) {
 export function getLatestAdminMessage(thread) {
   const messages = Array.isArray(thread?.messages) ? thread.messages : [];
   return [...messages].reverse().find((message) => (
-    message.sender === 'cs' && message.agent && message.agent !== 'Vindy'
+    message.sender === 'cs' && message.agent && ![LEGACY_ASSISTANT_NAME, 'Rena'].includes(message.agent)
   )) || null;
 }
 

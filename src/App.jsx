@@ -330,6 +330,12 @@ function App() {
     setUser(null);
   };
 
+  const handleMemberAuthenticated = (authenticatedUser) => {
+    setUser(authenticatedUser);
+    setBlockedNotice('');
+    setSessionChecking(false);
+  };
+
   const handleAdminLogin = (admin) => {
     setAdminUser(admin);
     setAdminChecking(false);
@@ -488,6 +494,7 @@ function App() {
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
+        onAuthenticated={handleMemberAuthenticated}
       />
 
       {blockedNotice && (

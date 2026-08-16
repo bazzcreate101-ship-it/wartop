@@ -1,136 +1,229 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { brandMark, icons } from '../assets/images';
 
+const emptyForm = {
+  identifier: '',
+  username: '',
+  email: '',
+  password: '',
+};
 
-export default function LoginModal({ isOpen, onClose }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [cooldownUntil, setCooldownUntil] = useState(0);
+export default function LoginModal({ isOpen, onClose, onAuthenticated }) {
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState(emptyForm);
+  const [showPassword, setShowPassword] = useState(false);
+  const [memberLoading, setMemberLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [memberError, setMemberError] = useState('');
+  const [googleError, setGoogleError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setMemberError('');
+    setGoogleError('');
+    setMemberLoading(false);
+    setGoogleLoading(false);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleGoogleLogin = async () => {
-    if (Date.now() < cooldownUntil) return;
-    setLoading(true);
-    setError('');
-    setCooldownUntil(Date.now() + 5000);
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+    setMemberError('');
+  };
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setMemberError('');
+    setGoogleError('');
+  };
+
+  const handleMemberAuth = async (event) => {
+    event.preventDefault();
+    if (memberLoading) return;
+    setMemberLoading(true);
+    setMemberError('');
+
     try {
-      const configResponse = await fetch('/api/auth/session', { credentials: 'same-origin' });
-      const config = await configResponse.json().catch(() => ({}));
-      if (!config.googleLoginAvailable) throw new Error('Google OAuth is not configured');
-      const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      window.location.assign(`/api/auth/google/start?returnTo=${encodeURIComponent(returnTo)}`);
+      const payload = mode === 'register'
+        ? {
+          action: 'register',
+          username: form.username.trim(),
+          email: form.email.trim(),
+          password: form.password,
+        }
+        : {
+          action: 'login',
+          identifier: form.identifier.trim(),
+          password: form.password,
+        };
+      const response = await fetch('/api/auth/email', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.user) {
+        throw new Error(data.error || 'Akun belum dapat diproses. Silakan coba lagi.');
+      }
+      setForm(emptyForm);
+      onAuthenticated?.(data.user);
       onClose();
-    } catch (err) {
-      console.error('Google Login error:', err);
-      setError('Login Google belum dapat dimulai. Silakan coba lagi.');
+    } catch (error) {
+      setMemberError(error.message || 'Akun belum dapat diproses. Silakan coba lagi.');
     } finally {
-      setLoading(false);
+      setMemberLoading(false);
     }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    setGoogleError('');
+    await new Promise((resolve) => setTimeout(resolve, 2400));
+    setGoogleLoading(false);
+    setGoogleError('Login Google gagal. Layanan sedang mengalami gangguan. Silakan coba lagi beberapa saat.');
   };
 
   return (
     <div
-      className="modal fade show d-block"
-      style={{ backgroundColor: 'rgba(0,0,0,0.72)', zIndex: 1080 }}
+      className="modal fade show d-block auth-modal-backdrop"
       tabIndex="-1"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !googleLoading) onClose();
+      }}
     >
-      <div className="modal-dialog modal-dialog-centered auth-modal__dialog" style={{ maxWidth: '720px' }}>
+      {googleLoading && (
+        <div className="google-outage-overlay" role="status" aria-live="polite">
+          <div className="google-outage-overlay__card">
+            <span className="google-outage-spinner" aria-hidden="true"></span>
+            <strong>Menghubungkan akun Google</strong>
+            <span>Mohon tunggu, kami sedang memeriksa layanan...</span>
+          </div>
+        </div>
+      )}
+
+      <div className="modal-dialog modal-dialog-centered auth-modal__dialog">
         <div className="modal-content auth-modal">
-          <button type="button" className="auth-modal__close" onClick={onClose} aria-label="Tutup">
+          <button type="button" className="auth-modal__close" onClick={onClose} aria-label="Tutup" disabled={googleLoading}>
             <i className="bi bi-x-lg" aria-hidden="true"></i>
           </button>
 
           <div className="auth-modal__grid">
-            {/* LEFT — intro */}
             <section className="auth-modal__intro" aria-labelledby="modalTitle">
               <div>
                 <div className="auth-modal__brand">
-                  <span className="auth-modal__brand-mark">
-                    <img src={brandMark} alt="" />
-                  </span>
-                  <strong>Wartop</strong>
+                  <span className="auth-modal__brand-mark"><img src={brandMark} alt="" /></span>
+                  <strong>Wartop ID</strong>
                 </div>
-                <span className="auth-modal__eyebrow">Selamat datang</span>
-                <h2 className="auth-modal__title" id="modalTitle">Masuk ke Wartop</h2>
-                <p className="auth-modal__subtitle">Pantau transaksi, kumpulkan hadiah, dan dapatkan bantuan lebih cepat.</p>
+                <span className="auth-modal__eyebrow">Member Area</span>
+                <h2 className="auth-modal__title" id="modalTitle">Satu akun untuk semua transaksi.</h2>
+                <p className="auth-modal__subtitle">Masuk dengan akun Wartop agar riwayat, saldo, pesanan, dan bantuan tersimpan dalam satu tempat.</p>
               </div>
-              <ul className="auth-modal__perks">
-                <li className="auth-modal__perk">
-                  <span className="auth-modal__perk-icon">
-                    <img src={icons.article} alt="" />
-                  </span>
-                  <p className="auth-modal__perk-text">Pantau dan simpan riwayat transaksi kamu kapan saja.</p>
-                </li>
-                <li className="auth-modal__perk">
-                  <span className="auth-modal__perk-icon">
-                    <img src={icons.gift} alt="" />
-                  </span>
-                  <p className="auth-modal__perk-text">Jadi yang pertama tahu info promo seru dan kumpulkan hadiah.</p>
-                </li>
-                <li className="auth-modal__perk">
-                  <span className="auth-modal__perk-icon">
-                    <img src={icons.phone} alt="" />
-                  </span>
-                  <p className="auth-modal__perk-text">Hubungi tim bantuan lebih mudah ketika ada kendala.</p>
-                </li>
-              </ul>
+
+              <div className="auth-modal__identity-card">
+                <span className="auth-modal__identity-label">Yang kamu dapatkan</span>
+                <ul className="auth-modal__perks">
+                  <li className="auth-modal__perk">
+                    <span className="auth-modal__perk-icon"><img src={icons.article} alt="" /></span>
+                    <p className="auth-modal__perk-text"><strong>Riwayat tertata</strong><span>Cek pesanan dan invoice tanpa mencari ulang.</span></p>
+                  </li>
+                  <li className="auth-modal__perk">
+                    <span className="auth-modal__perk-icon"><img src={icons.gift} alt="" /></span>
+                    <p className="auth-modal__perk-text"><strong>Benefit member</strong><span>Akses promo serta poin dari transaksi berhasil.</span></p>
+                  </li>
+                  <li className="auth-modal__perk">
+                    <span className="auth-modal__perk-icon"><img src={icons.phone} alt="" /></span>
+                    <p className="auth-modal__perk-text"><strong>Bantuan lebih cepat</strong><span>Rena dan tim CS mengenali konteks akunmu.</span></p>
+                  </li>
+                </ul>
+              </div>
             </section>
 
-            {/* RIGHT — CTA */}
-            <section className="auth-modal__cta" aria-label="Mulai login">
+            <section className="auth-modal__cta" aria-label="Login atau daftar akun Wartop">
               <div className="auth-modal__cta-header">
-                <h3 className="auth-modal__cta-title">Login lebih cepat</h3>
-                <p className="auth-modal__cta-desc">Gunakan akun Google untuk pengalaman transaksi lebih nyaman di Wartop.</p>
+                <span className="auth-modal__step">AKSES MEMBER</span>
+                <h3 className="auth-modal__cta-title">{mode === 'login' ? 'Selamat datang kembali' : 'Buat akun Wartop'}</h3>
+                <p className="auth-modal__cta-desc">
+                  {mode === 'login' ? 'Gunakan email atau username yang sudah terdaftar.' : 'Daftar memakai email, username, dan password pilihanmu.'}
+                </p>
               </div>
 
-              <div className="auth-modal__google">
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                  <button
-                    type="button"
-                    className="google-signin-btn"
-                    onClick={handleGoogleLogin}
-                    disabled={loading || Date.now() < cooldownUntil}
-                    id="btn-google-signin"
-                  >
-                    {loading ? (
-                      <span className="spinner-border spinner-border-sm me-2" role="status" />
-                    ) : (
-                      <img
-                        src={icons.google}
-                        alt="Google"
-                        width="20"
-                        height="20"
-                        onError={(e) => { e.target.src = 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg'; }}
-                        style={{ marginRight: '8px' }}
-                      />
-                    )}
-                    {loading ? 'Mengarahkan...' : 'Sign in with Google'}
-                  </button>
+              <div className="auth-mode-switch" role="tablist" aria-label="Pilih login atau daftar">
+                <button type="button" role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'is-active' : ''} onClick={() => switchMode('login')}>Masuk</button>
+                <button type="button" role="tab" aria-selected={mode === 'register'} className={mode === 'register' ? 'is-active' : ''} onClick={() => switchMode('register')}>Daftar</button>
+              </div>
 
-                  {error && (
-                    <div style={{
-                      background: 'rgba(239,68,68,0.12)',
-                      border: '1px solid rgba(239,68,68,0.3)',
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      fontSize: '0.78rem',
-                      color: '#fca5a5',
-                      textAlign: 'center',
-                      maxWidth: '260px'
-                    }}>
-                      ⚠️ {error}
+              <form className="member-auth-form" onSubmit={handleMemberAuth}>
+                {mode === 'register' ? (
+                  <>
+                    <label className="member-auth-field">
+                      <span>Username</span>
+                      <div className="member-auth-control">
+                        <i className="bi bi-person" aria-hidden="true"></i>
+                        <input name="username" value={form.username} onChange={updateField} minLength="3" maxLength="24" autoComplete="username" placeholder="contoh: bagas.store" required />
+                      </div>
+                    </label>
+                    <label className="member-auth-field">
+                      <span>Email</span>
+                      <div className="member-auth-control">
+                        <i className="bi bi-envelope" aria-hidden="true"></i>
+                        <input name="email" type="email" value={form.email} onChange={updateField} maxLength="160" autoComplete="email" placeholder="nama@email.com" required />
+                      </div>
+                    </label>
+                  </>
+                ) : (
+                  <label className="member-auth-field">
+                    <span>Email atau username</span>
+                    <div className="member-auth-control">
+                      <i className="bi bi-person" aria-hidden="true"></i>
+                      <input name="identifier" value={form.identifier} onChange={updateField} maxLength="160" autoComplete="username" placeholder="Email atau username" required />
                     </div>
-                  )}
-                </div>
-              </div>
+                  </label>
+                )}
+
+                <label className="member-auth-field">
+                  <span>Password</span>
+                  <div className="member-auth-control">
+                    <i className="bi bi-shield-lock" aria-hidden="true"></i>
+                    <input
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={updateField}
+                      minLength="8"
+                      maxLength="72"
+                      autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      placeholder="Minimal 8 karakter"
+                      required
+                    />
+                    <button type="button" className="member-auth-password-toggle" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}>
+                      <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </label>
+
+                {memberError && <div className="auth-notice auth-notice--error" role="alert"><i className="bi bi-exclamation-circle" aria-hidden="true"></i><span>{memberError}</span></div>}
+
+                <button type="submit" className="member-auth-submit" disabled={memberLoading}>
+                  {memberLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-label="Memproses"></span> : <span>{mode === 'login' ? 'Masuk ke Wartop' : 'Buat akun sekarang'}</span>}
+                  {!memberLoading && <i className="bi bi-arrow-right" aria-hidden="true"></i>}
+                </button>
+              </form>
+
+              <div className="auth-provider-divider"><span>atau lanjutkan dengan</span></div>
+
+              <button type="button" className="google-signin-btn" onClick={handleGoogleLogin} disabled={googleLoading} id="btn-google-signin">
+                <img src={icons.google} alt="" width="20" height="20" />
+                <span>Masuk dengan Google</span>
+              </button>
+
+              {googleError && <div className="auth-notice auth-notice--google" role="alert"><i className="bi bi-wifi-off" aria-hidden="true"></i><span>{googleError}</span></div>}
 
               <p className="auth-modal__terms">
-                Dengan masuk ke Wartop, kamu menyetujui{' '}
-                <a href="/page/terms">Syarat dan Ketentuan</a>{' '}
-                serta{' '}
-                <a href="/page/privacy">Kebijakan Privasi</a>.
+                Dengan melanjutkan, kamu menyetujui <a href="/page/terms">Syarat dan Ketentuan</a> serta <a href="/page/privacy">Kebijakan Privasi</a> Wartop.
               </p>
             </section>
           </div>

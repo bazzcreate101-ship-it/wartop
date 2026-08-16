@@ -655,8 +655,8 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
       id: makeAdminMessageId('sys'),
       sender: 'system',
       text: nextMode
-        ? `Chat dialihkan sepenuhnya ke Admin ${activeAdmin}. AI Vindy dinonaktifkan.`
-        : 'Chat dialihkan kembali ke AI Vindy. Admin keluar.',
+        ? `Chat dialihkan sepenuhnya ke Admin ${activeAdmin}. AI Rena dinonaktifkan.`
+        : 'Chat dialihkan kembali ke AI Rena. Admin keluar.',
     });
     handleSaveChats([...baseMessages, sysMsg], nextMode, activeAdmin);
   };
@@ -1319,7 +1319,7 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
                     <div>
                       <div className="fw-semibold text-white" style={{ fontSize: '0.85rem' }}>Status Chat Hub</div>
                       <div className="small text-secondary" style={{ fontSize: '0.75rem' }}>
-                        {adminMode ? '🔴 Live Admin Mode (AI Off)' : '🟢 AI Vindy Auto (AI On)'}
+                        {adminMode ? '🔴 Live Admin Mode (AI Off)' : '🟢 AI Rena Auto (AI On)'}
                       </div>
                     </div>
                     <button
@@ -1332,7 +1332,7 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
                 </div>
 
                 <div className="small text-secondary" style={{ fontSize: '0.78rem' }}>
-                  💡 <strong>Tips:</strong> Klik "Ambil Alih" jika ingin menjawab secara manual dan menonaktifkan chatbot AI Vindy.
+                  💡 <strong>Tips:</strong> Klik "Ambil Alih" jika ingin menjawab secara manual dan menonaktifkan chatbot AI Rena.
                 </div>
               </div>
             </div>

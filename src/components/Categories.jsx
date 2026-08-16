@@ -1,37 +1,44 @@
 import React from 'react';
 import { categories } from '../data/products';
 
+const categoryIcons = {
+  popular: 'bi-stars',
+  1: 'bi-controller',
+  2: 'bi-ticket-perforated',
+  3: 'bi-play-btn',
+  4: 'bi-phone',
+  6: 'bi-wallet2',
+  7: 'bi-receipt',
+  8: 'bi-gift',
+  9: 'bi-cpu',
+};
+
 export default function Categories({ activeCategory, onSelectCategory }) {
   return (
-    <div className="col-md-12 col-12 sticky-header sticky">
-      <div className="container-button d-flex p-2 bd-highlight mb-2 box-menu1">
-        <div className="cont-category bd-highlight p-2" id="cont-category">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                id={cat.id === 'popular' ? 'popularButton' : `catButton_${cat.id}`}
-                className={`text-uppercase btn button-size font-weight-bolder ${
-                  isActive
-                    ? 'btn-success text-dark'
-                    : 'btn-outline-success text-white'
-                }`}
-                style={{
-                  background: isActive ? 'linear-gradient(135deg, #146cff, #11d9f5)' : 'rgba(10, 24, 51, 0.7)',
-                  color: isActive ? '#ffffff' : '#a6efff',
-                  border: `1px solid ${isActive ? 'rgba(17, 217, 245, 0.7)' : 'rgba(49, 211, 255, 0.24)'}`,
-                  marginRight: '6px'
-                }}
-                type="button"
-                onClick={() => onSelectCategory(cat.id)}
-              >
-                <b className="box-menu2">{cat.name}</b>
-              </button>
-            );
-          })}
-        </div>
+    <nav className="wartop-category-shell" aria-label="Kategori produk">
+      <div className="wartop-category-heading">
+        <span>Jelajahi</span>
+        <strong>Kategori</strong>
       </div>
-    </div>
+      <div className="wartop-category-track" role="tablist" aria-label="Filter kategori produk">
+        {categories.map((category) => {
+          const isActive = activeCategory === category.id;
+          return (
+            <button
+              key={category.id}
+              id={category.id === 'popular' ? 'popularButton' : `catButton_${category.id}`}
+              className={`wartop-category-tab ${isActive ? 'is-active' : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onSelectCategory(category.id)}
+            >
+              <i className={`bi ${categoryIcons[category.id] || 'bi-grid'}`} aria-hidden="true"></i>
+              <span>{category.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

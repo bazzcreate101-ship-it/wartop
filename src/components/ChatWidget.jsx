@@ -17,7 +17,7 @@ const MAX_MESSAGE_LENGTH = 600;
 const CLIENT_COOLDOWN_MS = 1800;
 const CHAT_HISTORY_LIMIT = 300;
 const CHAT_SYNC_KEYS = ['wartop_chat_threads'];
-const SAFE_AI_ERROR_MESSAGE = 'Maaf Kak, Vindy sedang kurang stabil. Aku teruskan ke Admin Wartop supaya dibantu langsung.';
+const SAFE_AI_ERROR_MESSAGE = 'Koneksi Rena sempat terputus. Coba kirim ulang pesanmu sebentar lagi, ya.';
 const makeMessageId = (prefix = 'msg') => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export default function ChatWidget({ products, user, transactions }) {
@@ -143,7 +143,9 @@ export default function ChatWidget({ products, user, transactions }) {
       : [];
 
     const activeProducts = products.filter((product) => product.active !== false);
-    const aiProduct = activeProducts.find((product) => product.id === 'kebutuhan-ai' || /kebutuhan ai|chatgpt|claude|gemini|grok/i.test(`${product.name} ${product.description || ''}`));
+    const aiProducts = activeProducts.filter((product) => (
+      product.category === '9' || /chatgpt|claude|gemini|grok/i.test(`${product.name} ${product.description || ''}`)
+    ));
 
     return ({
     user: user ? { name: user.name, email: user.email } : null,
@@ -169,7 +171,7 @@ export default function ChatWidget({ products, user, transactions }) {
         description: denom.description,
       })),
     })),
-    aiCatalog: aiProduct ? {
+    aiCatalog: aiProducts.map((aiProduct) => ({
       productId: aiProduct.id,
       productName: aiProduct.name,
       description: aiProduct.description,
@@ -179,12 +181,12 @@ export default function ChatWidget({ products, user, transactions }) {
         name: denom.name,
         price: denom.price,
         stock: denom.stock,
-        accessType: denom.accessType || 'Private',
+        accessType: denom.accessType || 'Akun private',
         duration: denom.duration,
         warranty: denom.warranty,
         description: denom.description,
       })),
-    } : null,
+    })),
     paymentChannels: paymentChannels.map((channel) => ({
       id: channel.id,
       category: channel.category,
@@ -282,8 +284,8 @@ export default function ChatWidget({ products, user, transactions }) {
       const csMsg = createChatMessage({
         id: makeMessageId('msg'),
         sender: 'cs',
-        agent: 'Vindy',
-        text: data.reply || 'Ada yang bisa Vindy bantu lagi seputar Wartop, Kak?',
+        agent: 'Rena',
+        text: data.reply || 'Ada yang bisa Rena bantu lagi seputar Wartop, Kak?',
       });
       const nextMsgs = [...updatedMsgs, csMsg];
 
@@ -293,7 +295,13 @@ export default function ChatWidget({ products, user, transactions }) {
         saveState(nextMsgs);
       }
     } catch {
-      handoffToAdmin(updatedMsgs, SAFE_AI_ERROR_MESSAGE);
+      const fallbackMsg = createChatMessage({
+        id: makeMessageId('msg'),
+        sender: 'cs',
+        agent: 'Rena',
+        text: SAFE_AI_ERROR_MESSAGE,
+      });
+      saveState([...updatedMsgs, fallbackMsg]);
     } finally {
       setIsTyping(false);
     }
@@ -326,7 +334,7 @@ export default function ChatWidget({ products, user, transactions }) {
                 <div className="chat-agent-name">
                   {adminMode
                     ? (activeAdmin ? `Admin ${activeAdmin}` : 'Menghubungkan ke Admin...')
-                    : 'Vindy - CS Wartop'}
+                    : 'Rena - Asisten Wartop'}
                 </div>
                 <div className="chat-agent-sub">
                   {adminMode ? 'Admin Live Support' : 'AI Customer Assistant'}
@@ -363,7 +371,7 @@ export default function ChatWidget({ products, user, transactions }) {
 
             {isTyping && (
               <div className="chat-bubble-row chat-row-agent">
-                <span className="chat-bubble-sender">Vindy</span>
+                <span className="chat-bubble-sender">Rena</span>
                 <div className="chat-bubble bubble-agent">
                   <div className="chat-typing-dots">
                     <span></span>

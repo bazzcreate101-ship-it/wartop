@@ -1,6 +1,7 @@
 import {
   USER_SESSION_COOKIE,
   clearHttpOnlyCookie,
+  getUserSecret,
   readUserSession,
   sendJson,
 } from './_security.js';
@@ -19,8 +20,14 @@ export default async function handler(req, res) {
   const googleLoginAvailable = Boolean(
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.USER_SESSION_SECRET,
   );
+  const emailLoginAvailable = Boolean(getUserSecret());
   const payload = readUserSession(req);
-  if (!payload) return sendJson(res, 200, { authenticated: false, user: null, googleLoginAvailable });
+  if (!payload) return sendJson(res, 200, {
+    authenticated: false,
+    user: null,
+    emailLoginAvailable,
+    googleLoginAvailable,
+  });
 
   try {
     const state = await readStateRows(['wartop_blocked_users']);
@@ -35,6 +42,7 @@ export default async function handler(req, res) {
     }
     return sendJson(res, 200, {
       authenticated: true,
+      emailLoginAvailable,
       googleLoginAvailable,
       user: {
         name: payload.name,

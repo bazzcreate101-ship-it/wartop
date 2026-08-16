@@ -4,7 +4,7 @@ import { categories } from '../data/products';
 const SITE_URL = 'https://wartop.shop';
 const SITE_NAME = 'Wartop';
 const DEFAULT_TITLE = 'Wartop - Jual Voucher Game dan Top up Game Indonesia Murah';
-const DEFAULT_DESCRIPTION = 'Wartop adalah tempat top up game, voucher digital, kebutuhan AI, hiburan, dan e-wallet dengan proses cepat serta pembayaran lengkap.';
+const DEFAULT_DESCRIPTION = 'Wartop adalah tempat top up game, voucher digital, akun ChatGPT, Claude, Gemini, Grok, hiburan, dan e-wallet dengan proses cepat serta pembayaran lengkap.';
 
 function rupiah(value) {
   return new Intl.NumberFormat('id-ID', {
@@ -181,7 +181,7 @@ function pageSeo({ currentView, activeProductId, activePage, products }) {
             name: 'Apa itu Wartop?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Wartop adalah platform top up game, voucher digital, kebutuhan AI, hiburan, dan e-wallet untuk pengguna Indonesia.',
+              text: 'Wartop adalah platform top up game, voucher digital, akun ChatGPT, Claude, Gemini, Grok, hiburan, dan e-wallet untuk pengguna Indonesia.',
             },
           },
           {

@@ -10,8 +10,16 @@ export const categories = [
   { id: '6', name: 'E-Wallet' },
   { id: '7', name: 'Tagihan' },
   { id: '8', name: 'Gift Card' },
-  { id: '9', name: 'Tools' }
+  { id: '9', name: 'AI Premium' }
 ];
+
+const aiDeliveryFields = [
+  { name: 'whatsapp', placeholder: 'Nomor WhatsApp aktif', type: 'number' },
+  { name: 'email', placeholder: 'Email penerima / Gmail aktif', type: 'email' }
+];
+
+const aiPackages = (provider) => aiDenominations.filter((item) => item.id.startsWith(`ai-${provider}-`));
+
 export const products = [
   {
     id: 'mobile-legend',
@@ -261,21 +269,60 @@ export const products = [
     ]
   },
   {
-    id: 'kebutuhan-ai',
-    name: 'Kebutuhan AI',
+    id: 'chatgpt',
+    name: 'ChatGPT',
+    category: '9',
+    image: '/gassets/ai/chatgpt-go-3-bulan.webp',
+    popular: true,
+    active: true,
+    discount: '2 PAKET',
+    cardLabel: 'AI · OpenAI',
+    description: 'Pilihan akun ChatGPT Go dan ChatGPT Plus untuk belajar, menulis, analisis, coding, serta produktivitas. Setiap paket menjelaskan jenis akses, masa aktif, garansi, dan batas layanan secara terpisah.',
+    inputLabel: 'Masukkan WhatsApp aktif dan email penerima untuk pengiriman akses ChatGPT',
+    inputFields: aiDeliveryFields,
+    denominations: aiPackages('chatgpt')
+  },
+  {
+    id: 'claude',
+    name: 'Claude',
     category: '9',
     image: '/gassets/ai/ai-claude-pro.webp',
     popular: true,
     active: true,
-    discount: 'TOOLS AI',
-    cardLabel: 'Akun AI',
-    description: 'Katalog akun AI premium untuk kebutuhan kerja, belajar, coding, riset, penulisan, dan produktivitas harian. Pilih paket yang sesuai, isi WhatsApp serta email penerima, lalu detail akun akan diproses setelah pembayaran berhasil.',
-    inputLabel: 'Masukkan WhatsApp aktif dan email penerima untuk pengiriman akun AI',
-    inputFields: [
-      { name: 'whatsapp', placeholder: 'Nomor WhatsApp aktif', type: 'number' },
-      { name: 'email', placeholder: 'Email penerima / Gmail aktif', type: 'email' }
-    ],
-    denominations: aiDenominations
+    discount: '2 PAKET',
+    cardLabel: 'AI · Anthropic',
+    description: 'Pilihan Claude Pro dan Claude Max untuk penulisan panjang, analisis dokumen, coding, riset, dan workflow profesional. Pro dan Max dipisahkan agar kapasitas serta skenario penggunaannya mudah dibandingkan.',
+    inputLabel: 'Masukkan WhatsApp aktif dan email penerima untuk pengiriman akses Claude',
+    inputFields: aiDeliveryFields,
+    denominations: aiPackages('claude')
+  },
+  {
+    id: 'gemini',
+    name: 'Gemini',
+    category: '9',
+    image: '/gassets/ai/ai-gemini-pro.webp',
+    popular: true,
+    active: true,
+    discount: '2 DURASI',
+    cardLabel: 'AI · Google',
+    description: 'Paket Gemini Pro berdurasi 12 atau 24 bulan untuk belajar, analisis, coding, penulisan, dan produktivitas dalam ekosistem Google. Pilih durasi berdasarkan masa pakai dan garansi aktivasi yang dibutuhkan.',
+    inputLabel: 'Masukkan WhatsApp aktif dan Gmail penerima untuk aktivasi Gemini',
+    inputFields: aiDeliveryFields,
+    denominations: aiPackages('gemini')
+  },
+  {
+    id: 'grok',
+    name: 'Grok',
+    category: '9',
+    image: '/gassets/ai/ai-grok-super.webp',
+    popular: true,
+    active: true,
+    discount: 'PLUS',
+    cardLabel: 'AI · xAI',
+    description: 'Grok Plus untuk eksplorasi topik, riset tren, ide konten, dan tanya jawab cepat. Detail masa aktif, jenis akun, stok, dan garansi ditampilkan sebelum checkout.',
+    inputLabel: 'Masukkan WhatsApp aktif dan email penerima untuk pengiriman akses Grok',
+    inputFields: aiDeliveryFields,
+    denominations: aiPackages('grok')
   },
   {
     id: 'spotify-premium',

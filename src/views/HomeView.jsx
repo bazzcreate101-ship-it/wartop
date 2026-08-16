@@ -3,6 +3,7 @@ import Banner from '../components/Banner';
 import FlashSale from '../components/FlashSale';
 import Categories from '../components/Categories';
 import { brandMark, productImages } from '../assets/images';
+import { categories as productCategories } from '../data/products';
 
 export default function HomeView({ products, onSelectProduct, onNavigate }) {
   const [activeCategory, setActiveCategory] = useState('popular');
@@ -11,6 +12,7 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
   const filteredProducts = activeCategory === 'popular'
     ? visibleProducts.filter(p => p.popular)
     : visibleProducts.filter(p => p.category === activeCategory);
+  const activeCategoryName = productCategories.find((category) => category.id === activeCategory)?.name || 'Produk';
 
   const handleProductClick = (prodId, e) => {
     e.preventDefault();
@@ -24,70 +26,70 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
       <Banner />
 
       <div className="container col-md-8 col-12">
-        {/* 2. LIST PRODUCT WRAPPER — same structure as original */}
-        <div className="list-product">
+        <section className="wartop-storefront" aria-labelledby="storefront-title">
+          <header className="wartop-storefront__intro">
+            <div>
+              <span className="section-eyebrow">Wartop Marketplace</span>
+              <h2 id="storefront-title">Pilih layanan digitalmu.</h2>
+              <p>Game, hiburan, pembayaran, dan platform AI kini ditata per brand agar lebih mudah ditemukan.</p>
+            </div>
+            <div className="wartop-storefront__signals" aria-label="Keunggulan Wartop">
+              <span><i className="bi bi-lightning-charge-fill" aria-hidden="true"></i> Proses cepat</span>
+              <span><i className="bi bi-shield-check" aria-hidden="true"></i> Checkout aman</span>
+              <span><i className="bi bi-headset" aria-hidden="true"></i> Bantuan aktif</span>
+            </div>
+          </header>
 
-          {/* 2a. CATEGORIES STICKY BAR (comes FIRST in original) */}
           <Categories activeCategory={activeCategory} onSelectCategory={setActiveCategory} />
-
-          {/* 2b. FLASH SALE */}
           <FlashSale products={visibleProducts} onSelectProduct={onSelectProduct} />
 
-          {/* 2c. PRODUCT GRID HEADER */}
-          <div id="allContent" className="row pt-1">
-            <div className="col-lg-12 col-12" id="populerContent">
-              <div
-                className="card-header d-flex justify-content-between mb-3 product-grid-heading"
-              >
-                <h3 className="p-0 m-0" style={{ fontSize: '1.1rem' }}>
-                  <b>{activeCategory === 'popular' ? 'Populer' : 'Daftar Produk'}</b>
-                </h3>
+          <section className="wartop-catalog" id="allContent" aria-live="polite">
+            <header className="wartop-catalog__header">
+              <div>
+                <span className="wartop-catalog__eyebrow">Koleksi aktif</span>
+                <h3>{activeCategoryName}</h3>
               </div>
+              <span className="wartop-catalog__count">{filteredProducts.length} produk</span>
+            </header>
 
-              {/* 2d. PRODUCT GRID — col-6 col-lg-3 with custom-card horizontal layout */}
-              <div className="row mb-3" id="populer-grid-max">
-                {filteredProducts.map(prod => (
-                  <div key={prod.id} className="col-6 col-lg-3 mb-3 p-1" style={{ minHeight: '80px' }}>
-                    <a
-                      href={`/order/${prod.id}`}
-                      onClick={(e) => handleProductClick(prod.id, e)}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <div
-                        className="custom-card h-60 position-relative"
-                        style={{ backgroundImage: `url('${prod.image}')` }}
-                      >
-                        <div className="custom-card-left">
-                          <img
-                            src={prod.image}
-                            alt={prod.name}
-                            className="custom-card-icon"
-                            loading="lazy"
-                            decoding="async"
-                            onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
-                          />
-                        </div>
-                        <div className="custom-card-body">
-                          {prod.name}<br />
-                          <p style={{ fontSize: '0.75rem' }}>{prod.cardLabel || 'Top up Game'}</p>
-                        </div>
-                        {prod.discount && (
-                          <>
-                            <div className="d-flex justify-content-end" style={{ position: 'absolute', top: 0, right: 0, left: 0 }}>
-                              <div className="v36_9 shimmer"></div>
-                            </div>
-                            <span className="v36_10 text-white">{prod.discount}</span>
-                          </>
-                        )}
-                      </div>
-                    </a>
+            <div className="wartop-catalog__grid" id="populer-grid-max">
+              {filteredProducts.map((product) => (
+                <a
+                  key={product.id}
+                  href={`/order/${product.id}`}
+                  onClick={(event) => handleProductClick(product.id, event)}
+                  className={`wartop-product-card ${product.category === '9' ? 'wartop-product-card--ai' : ''}`}
+                  aria-label={`Lihat ${product.name}`}
+                >
+                  <div className="wartop-product-card__media" style={{ backgroundImage: `url('${product.image}')` }}>
+                    <span className="wartop-product-card__veil" aria-hidden="true"></span>
+                    <img
+                      src={product.image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
+                    />
+                    {product.discount && <span className="wartop-product-card__badge">{product.discount}</span>}
+                    <span className="wartop-product-card__arrow" aria-hidden="true"><i className="bi bi-arrow-up-right"></i></span>
                   </div>
-                ))}
-              </div>
+                  <div className="wartop-product-card__body">
+                    <span>{product.cardLabel || 'Top up digital'}</span>
+                    <h4>{product.name}</h4>
+                    <small>{product.category === '9' ? `${product.denominations?.length || 0} varian tersedia` : 'Lihat nominal & harga'}</small>
+                  </div>
+                </a>
+              ))}
             </div>
-          </div>
 
-        </div>{/* end .list-product */}
+            {filteredProducts.length === 0 && (
+              <div className="wartop-catalog__empty">
+                <i className="bi bi-search" aria-hidden="true"></i>
+                <span>Belum ada produk aktif pada kategori ini.</span>
+              </div>
+            )}
+          </section>
+        </section>
 
         {/* 3. NEWS SECTION */}
         <div className="news-section mb-4" style={{ background: 'transparent', padding: 0 }}>
