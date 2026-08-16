@@ -21,6 +21,21 @@ const paymentLogoList = [
   ['Indomaret', '/gassets/payment/indomaret.svg'],
 ];
 
+const complianceBadges = [
+  {
+    name: 'Otoritas Jasa Keuangan',
+    label: 'Berizin & diawasi oleh',
+    logoUrl: '/gassets/legal/ojk.png',
+    logoClassName: 'footer-compliance__logo--ojk',
+  },
+  {
+    name: 'Kementerian Komunikasi dan Digital',
+    label: 'PSE terdaftar di',
+    logoUrl: '/gassets/legal/komdigi.svg',
+    logoClassName: 'footer-compliance__logo--komdigi',
+  },
+];
+
 
 export default function Footer({ onNavigate }) {
   return (
@@ -88,8 +103,35 @@ export default function Footer({ onNavigate }) {
 
         </div>
 
+        <section className="footer-compliance" aria-labelledby="footer-compliance-title">
+          <div className="footer-compliance__company">
+            <span className="footer-compliance__eyebrow" id="footer-compliance-title">Legalitas & Kepatuhan</span>
+            <p>Wartop dikelola oleh</p>
+            <strong>PT Maju Teknologi Digital</strong>
+          </div>
+
+          <div className="footer-compliance__badges">
+            {complianceBadges.map((badge) => (
+              <div className="footer-compliance__badge" key={badge.name}>
+                <div className="footer-compliance__logo-shell">
+                  <img
+                    className={`footer-compliance__logo ${badge.logoClassName}`}
+                    src={badge.logoUrl}
+                    alt={`Logo ${badge.name}`}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="footer-compliance__copy">
+                  <span>{badge.label}</span>
+                  <strong>{badge.name}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Wartop. Seluruh hak cipta dilindungi undang-undang.</p>
+          <p>© {new Date().getFullYear()} Wartop — PT Maju Teknologi Digital. Seluruh hak cipta dilindungi undang-undang.</p>
         </div>
       </div>
     </footer>
