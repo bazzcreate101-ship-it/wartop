@@ -1,7 +1,12 @@
 import { queueCloudStateWrite } from './cloudState';
 
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
-const deprecatedProductIds = new Set(['kebutuhan-ai']);
+const deprecatedProductIds = new Set([
+  'kebutuhan-ai',
+  ['da', 'na-topup'].join(''),
+  ['go', 'pay-topup'].join(''),
+]);
+const deprecatedProductCategories = new Set(['4', '6']);
 
 export function safeJsonParse(value, fallback) {
   try {
@@ -57,7 +62,11 @@ export function normalizeStoredProducts(savedProducts, fallbackProducts) {
 
   const mergedById = new Map(
     parsed
-      .filter((product) => product?.id && !deprecatedProductIds.has(product.id))
+      .filter((product) => (
+        product?.id &&
+        !deprecatedProductIds.has(product.id) &&
+        !deprecatedProductCategories.has(String(product.category || ''))
+      ))
       .map((product) => [product.id, normalize(product)]),
   );
   fallbackProducts.forEach((product) => {

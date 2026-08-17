@@ -5,20 +5,14 @@ import { supportInfo } from '../data/siteInfo';
 const paymentLogoList = [
   ['Saldo Wartop', '/gassets/payment/wartop-balance.svg'],
   ['Alfamart', '/gassets/payment/ref/alfamart.png'],
-  ['AstraPay', '/gassets/payment/ref/astrapay.png'],
   ['BCA', '/gassets/payment/ref/bca.png'],
   ['BNC', '/gassets/payment/ref/bnc.png'],
   ['BNI', '/gassets/payment/ref/bni.png'],
   ['BRIVA', '/gassets/payment/ref/briva.png'],
   ['Visa Mastercard', '/gassets/payment/ref/visa-mastercard.webp'],
-  ['DANA', '/gassets/payment/ref/dana.png'],
-  ['LinkAja', '/gassets/payment/ref/linkaja.png'],
   ['Mandiri', '/gassets/payment/ref/mandiri.png'],
-  ['OVO', '/gassets/payment/ref/ovo.png'],
   ['PermataBank', '/gassets/payment/ref/permata.png'],
   ['QRIS', '/gassets/payment/ref/qris.png'],
-  ['ShopeePay', '/gassets/payment/ref/shopeepay.png'],
-  ['GoPay', '/gassets/payment/gopay.svg'],
   ['Indomaret', '/gassets/payment/indomaret.svg'],
 ];
 
@@ -65,7 +59,7 @@ export default function Footer({ onNavigate }) {
               <img src={brandWordmark} alt="Wartop" className="footer-brand-logo" />
             </div>
             <p className="faq-body">
-              Platform Voucher Game dan Topup Game <b>Free Fire, Mobile Legends, Garena Shell, Steam Wallet</b> dan masih banyak lainnya dengan pembayaran yang sangat lengkap <b>QRIS dan E-Wallet</b> didukung oleh Customer Service 24 Jam.
+              Platform Voucher Game dan Topup Game <b>Free Fire, Mobile Legends, Garena Shell, Steam Wallet</b> dan masih banyak lainnya dengan pembayaran lengkap melalui <b>QRIS, Virtual Account, dan minimarket</b> serta dukungan Customer Service.
             </p>
           </div>
 

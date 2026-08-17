@@ -1,23 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import topupBanner from '../assets/banner/wartop-topup.png';
-import digitalBanner from '../assets/banner/wartop-digital.png';
-import paymentBanner from '../assets/banner/wartop-payment.png';
 
 const heroSlides = [
   {
     src: topupBanner,
     alt: 'Wartop Digital Hub — top up cepat, main tanpa jeda',
     label: 'Top up cepat',
-  },
-  {
-    src: digitalBanner,
-    alt: 'Semua kebutuhan digital kamu lebih dekat bersama Wartop',
-    label: 'Kebutuhan digital',
-  },
-  {
-    src: paymentBanner,
-    alt: 'Bayar aman dan praktis dengan berbagai metode pembayaran Wartop',
-    label: 'Pembayaran lengkap',
   },
 ];
 
@@ -66,18 +54,20 @@ export default function Banner() {
           ))}
         </div>
 
-        <div className="wartop-banner__pagination" aria-label="Pilih banner">
-          {heroSlides.map((slide, index) => (
-            <button
-              key={slide.label}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              className={index === activeIndex ? 'is-active' : ''}
-              aria-label={`Tampilkan banner ${slide.label}`}
-              aria-current={index === activeIndex ? 'true' : undefined}
-            />
-          ))}
-        </div>
+        {heroSlides.length > 1 && (
+          <div className="wartop-banner__pagination" aria-label="Pilih banner">
+            {heroSlides.map((slide, index) => (
+              <button
+                key={slide.label}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={index === activeIndex ? 'is-active' : ''}
+                aria-label={`Tampilkan banner ${slide.label}`}
+                aria-current={index === activeIndex ? 'true' : undefined}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

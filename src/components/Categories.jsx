@@ -6,8 +6,6 @@ const categoryIcons = {
   1: 'bi-controller',
   2: 'bi-ticket-perforated',
   3: 'bi-play-btn',
-  4: 'bi-phone',
-  6: 'bi-wallet2',
   7: 'bi-receipt',
   8: 'bi-gift',
   9: 'bi-cpu',

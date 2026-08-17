@@ -9,11 +9,6 @@ import brandWordmarkImg from './wartop-wordmark.png';
 
 // --- PAYMENT LOGOS ---
 import qrisImg from './payment/qris.svg';
-import danaImg from './payment/dana.svg';
-import gopayImg from './payment/gopay.svg';
-import ovoImg from './payment/ovo.svg';
-import shopeepayImg from './payment/shopeepay.svg';
-import linkajaImg from './payment/linkaja.svg';
 import bcaImg from './payment/bca.svg';
 import briImg from './payment/bri.svg';
 import mandiriImg from './payment/mandiri.svg';
@@ -56,11 +51,6 @@ export const brandWordmark = brandWordmarkImg;
 
 export const paymentImages = {
   qris: qrisImg,
-  dana: danaImg,
-  gopay: gopayImg,
-  ovo: ovoImg,
-  shopeepay: shopeepayImg,
-  linkaja: linkajaImg,
   bca: bcaImg,
   bri: briImg,
   mandiri: mandiriImg,
@@ -74,8 +64,7 @@ export const paymentImages = {
 };
 
 export const paymentLogoList = [
-  wartopBalanceImg, qrisImg, danaImg, gopayImg, ovoImg, shopeepayImg, linkajaImg,
-  bcaImg, briImg, mandiriImg, bniImg, bsiImg, cimbImg,
+  wartopBalanceImg, qrisImg, bcaImg, briImg, mandiriImg, bniImg, bsiImg, cimbImg,
   permatabankImg, alfamartImg, indomaretImg
 ];
 

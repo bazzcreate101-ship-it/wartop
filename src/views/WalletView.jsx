@@ -28,8 +28,8 @@ export default function WalletView({ user, onNavigate }) {
   const [topupAmount, setTopupAmount] = useState(50000);
   const [withdrawForm, setWithdrawForm] = useState({
     amount: 100000,
-    destinationType: 'E-Wallet',
-    provider: 'DANA',
+    destinationType: 'Bank',
+    provider: 'BCA',
     accountName: '',
     accountNumber: '',
   });
@@ -120,12 +120,12 @@ export default function WalletView({ user, onNavigate }) {
       const copy = {
         minimum_withdrawal: `Minimal tarik saldo adalah ${formatRupiah(WALLET_WITHDRAW_MIN)}.`,
         insufficient_balance: 'Saldo Wartop tidak cukup untuk nominal penarikan ini.',
-        destination_required: 'Lengkapi provider, nama penerima, dan nomor rekening/e-wallet.',
+        destination_required: 'Lengkapi bank, nama penerima, dan nomor rekening.',
       };
       reload(copy[result.reason] || 'Pengajuan tarik saldo gagal diproses.');
       return;
     }
-    setWithdrawForm({ amount: 100000, destinationType: 'E-Wallet', provider: 'DANA', accountName: '', accountNumber: '' });
+    setWithdrawForm({ amount: 100000, destinationType: 'Bank', provider: 'BCA', accountName: '', accountNumber: '' });
     reload(`Pengajuan tarik saldo dibuat. Admin akan memproses payout ${formatRupiah(result.request.payoutAmount)}.`);
   };
 
@@ -149,7 +149,7 @@ export default function WalletView({ user, onNavigate }) {
             <h1>Dompet Saya</h1>
             <p>
               Saldo Wartop bisa dipakai untuk checkout, refund transaksi gagal yang sudah terdebit,
-              top up via QRIS, dan ditarik ke e-wallet/bank.
+              top up via QRIS, dan ditarik ke rekening bank.
             </p>
           </div>
           <div className="wallet-balance-card">
@@ -207,7 +207,7 @@ export default function WalletView({ user, onNavigate }) {
 
           <section className="order-card">
             <span className="section-eyebrow">Tarik Saldo</span>
-            <h2 className="section-title">Withdraw ke e-wallet / bank</h2>
+            <h2 className="section-title">Withdraw ke rekening bank</h2>
             <p className="text-secondary">Minimal tarik {formatRupiah(WALLET_WITHDRAW_MIN)}. Biaya layanan 0,7% dipotong dari nominal penarikan.</p>
             <form className="wallet-form" onSubmit={handleWithdraw}>
               <div className="wallet-form__inline">
@@ -219,26 +219,14 @@ export default function WalletView({ user, onNavigate }) {
                   onChange={(event) => setWithdrawForm({ ...withdrawForm, amount: Number(event.target.value) })}
                   placeholder="Nominal tarik"
                 />
-                <select
-                  value={withdrawForm.destinationType}
-                  onChange={(event) => setWithdrawForm({
-                    ...withdrawForm,
-                    destinationType: event.target.value,
-                    provider: event.target.value === 'Bank' ? 'BCA' : 'DANA',
-                  })}
-                >
-                  <option>E-Wallet</option>
-                  <option>Bank</option>
-                </select>
+                <input value="Bank" aria-label="Jenis tujuan penarikan" disabled />
               </div>
               <select
                 value={withdrawForm.provider}
                 onChange={(event) => setWithdrawForm({ ...withdrawForm, provider: event.target.value })}
               >
-                {(withdrawForm.destinationType === 'Bank'
-                  ? ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB', 'PermataBank']
-                  : ['DANA', 'GoPay', 'OVO', 'ShopeePay', 'LinkAja']
-                ).map((provider) => <option key={provider}>{provider}</option>)}
+                {['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB', 'PermataBank']
+                  .map((provider) => <option key={provider}>{provider}</option>)}
               </select>
               <input
                 value={withdrawForm.accountName}
@@ -248,7 +236,7 @@ export default function WalletView({ user, onNavigate }) {
               <input
                 value={withdrawForm.accountNumber}
                 onChange={(event) => setWithdrawForm({ ...withdrawForm, accountNumber: event.target.value })}
-                placeholder="Nomor e-wallet / rekening"
+                placeholder="Nomor rekening"
               />
               <div className="wallet-fee-preview">
                 <span>Fee 0,7%: <strong>{formatRupiah(withdrawFee)}</strong></span>

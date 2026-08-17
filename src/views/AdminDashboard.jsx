@@ -38,8 +38,6 @@ const initialCategories = [
   { id: '1', name: 'Top up Game' },
   { id: '2', name: 'Voucher Game' },
   { id: '3', name: 'Hiburan' },
-  { id: '4', name: 'Pulsa & Paket Data' },
-  { id: '6', name: 'E-Wallet' },
   { id: '7', name: 'Tagihan' },
   { id: '8', name: 'Gift Card' },
   { id: '9', name: 'Tools' }

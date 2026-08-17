@@ -6243,3 +6243,483 @@ footer strong {
     animation: none;
   }
 }
+
+/* Rena support dock */
+.rena-chat-launch.chat-float-btn {
+  width: auto;
+  min-width: 148px;
+  height: 56px;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  padding: 0.42rem 0.9rem 0.42rem 0.45rem;
+  overflow: visible;
+  border: 1px solid rgba(71, 205, 255, 0.35);
+  border-radius: 18px;
+  color: #ffffff;
+  background: linear-gradient(145deg, rgba(12, 51, 105, 0.98), rgba(5, 25, 57, 0.99));
+  box-shadow: 0 18px 46px rgba(0, 14, 43, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.rena-chat-launch.chat-float-btn:hover {
+  border-color: rgba(72, 224, 255, 0.7);
+  background: linear-gradient(145deg, rgba(16, 71, 140, 0.99), rgba(6, 35, 77, 0.99));
+  transform: translateY(-2px);
+}
+
+.rena-chat-launch.chat-float-btn.is-open {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  justify-content: center;
+  padding: 0;
+  border-radius: 15px;
+}
+
+.rena-chat-launch__mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(20, 108, 255, 0.3), rgba(17, 217, 245, 0.16));
+}
+
+.rena-chat-launch__mark .chat-brand-mark {
+  width: 31px;
+  height: 31px;
+  object-fit: cover;
+  transform: scale(1.25);
+}
+
+.rena-chat-launch__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.rena-chat-launch__copy small {
+  margin-bottom: 0.25rem;
+  color: #80bad5;
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.rena-chat-launch__copy strong {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.rena-chat-launch__close {
+  font-size: 1.15rem;
+}
+
+.rena-chat-launch .chat-badge-pulse {
+  top: -3px;
+  right: -3px;
+  width: 11px;
+  height: 11px;
+  border-color: #06172f;
+  background: #2de1b1;
+}
+
+.chat-window.rena-chat-window {
+  width: 390px;
+  height: min(575px, calc(100dvh - 118px));
+  overflow: hidden;
+  border: 1px solid rgba(69, 189, 245, 0.22);
+  border-radius: 24px;
+  color: #e9f7ff;
+  background:
+    radial-gradient(circle at 100% 0, rgba(22, 184, 255, 0.12), transparent 15rem),
+    linear-gradient(165deg, rgba(7, 26, 57, 0.99), rgba(4, 14, 32, 0.99));
+  box-shadow: 0 30px 82px rgba(0, 8, 30, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+}
+
+.chat-window.rena-chat-window::before {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 1.25rem;
+  width: 76px;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  content: '';
+  background: linear-gradient(90deg, #146cff, #11d9f5);
+  box-shadow: 0 0 18px rgba(17, 217, 245, 0.58);
+}
+
+.rena-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.85rem;
+  border-bottom: 1px solid rgba(91, 175, 219, 0.12);
+  background: rgba(7, 23, 50, 0.76);
+}
+
+.rena-chat-header__agent,
+.rena-chat-header__actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.rena-chat-header__agent {
+  gap: 0.7rem;
+}
+
+.rena-chat-avatar {
+  position: relative;
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  place-items: center;
+  overflow: visible;
+  border: 1px solid rgba(105, 224, 255, 0.34);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(20, 108, 255, 0.32), rgba(17, 217, 245, 0.14));
+}
+
+.rena-chat-avatar img {
+  width: 33px;
+  height: 33px;
+  object-fit: cover;
+  transform: scale(1.24);
+}
+
+.rena-chat-avatar > span {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #071a38;
+  border-radius: 999px;
+  background: #2de1b1;
+}
+
+.rena-chat-header__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.08;
+}
+
+.rena-chat-header__eyebrow {
+  margin-bottom: 0.28rem;
+  color: #65b5d4;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rena-chat-header__copy strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-family: 'Oxanium', 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rena-chat-header__actions {
+  gap: 0.45rem;
+}
+
+.rena-chat-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.32rem 0.48rem;
+  border: 1px solid rgba(45, 225, 177, 0.2);
+  border-radius: 999px;
+  color: #8af2d3;
+  background: rgba(45, 225, 177, 0.08);
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.rena-chat-mode.is-admin {
+  border-color: rgba(255, 188, 88, 0.24);
+  color: #ffd38a;
+  background: rgba(255, 168, 54, 0.08);
+}
+
+.rena-chat-header__actions > button {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(103, 182, 225, 0.14);
+  border-radius: 10px;
+  color: #a9cbe0;
+  background: rgba(10, 34, 69, 0.76);
+}
+
+.rena-chat-toolbar {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(91, 175, 219, 0.1);
+  color: #7ea3bc;
+  background: rgba(5, 18, 40, 0.68);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.rena-chat-toolbar > span {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.rena-chat-toolbar > span i {
+  color: #55dff3;
+}
+
+.rena-chat-toolbar > button {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgba(83, 215, 239, 0.22);
+  border-radius: 999px;
+  color: #a9f3ff;
+  background: rgba(17, 217, 245, 0.07);
+  font-size: 0.57rem;
+  font-weight: 800;
+}
+
+.chat-messages-container.rena-chat-feed {
+  gap: 0.85rem;
+  padding: 1rem;
+  background:
+    linear-gradient(rgba(57, 151, 207, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 151, 207, 0.035) 1px, transparent 1px),
+    rgba(3, 13, 30, 0.64);
+  background-size: 28px 28px;
+  scrollbar-color: rgba(62, 171, 223, 0.35) transparent;
+  scrollbar-width: thin;
+}
+
+.rena-chat-quick-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.2rem;
+}
+
+.rena-chat-quick-prompts > span {
+  color: #658ca8;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rena-chat-quick-prompts > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.rena-chat-quick-prompts button {
+  padding: 0.4rem 0.58rem;
+  border: 1px solid rgba(74, 188, 235, 0.18);
+  border-radius: 10px;
+  color: #b8daea;
+  background: rgba(9, 38, 76, 0.72);
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+.rena-chat-quick-prompts button:hover {
+  border-color: rgba(17, 217, 245, 0.44);
+  color: #e9fbff;
+}
+
+.rena-chat-feed .chat-bubble-row {
+  max-width: 86%;
+}
+
+.rena-chat-sender {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+  padding-left: 0;
+  color: #7199b5;
+  font-size: 0.61rem;
+  font-weight: 800;
+}
+
+.rena-chat-sender > span {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 6px;
+  color: #d8fbff;
+  background: linear-gradient(145deg, #146cff, #0ea8ce);
+  font-size: 0.54rem;
+}
+
+.rena-chat-bubble.chat-bubble {
+  padding: 0.72rem 0.8rem 0.5rem;
+  border-radius: 16px;
+  font-size: 0.76rem;
+  line-height: 1.52;
+  box-shadow: none;
+}
+
+.rena-chat-bubble.bubble-agent {
+  border: 1px solid rgba(92, 173, 218, 0.14);
+  border-top-left-radius: 5px;
+  color: #dceef8;
+  background: linear-gradient(145deg, rgba(15, 47, 88, 0.94), rgba(9, 31, 63, 0.96));
+}
+
+.rena-chat-bubble.bubble-user {
+  border: 1px solid rgba(63, 219, 246, 0.2);
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 16px;
+  background: linear-gradient(135deg, #175fd3, #079cbd) !important;
+}
+
+.rena-chat-bubble .chat-bubble-time {
+  margin-top: 0.38rem;
+  color: rgba(201, 232, 245, 0.42);
+  font-size: 0.54rem;
+}
+
+.rena-chat-feed .chat-msg-system {
+  width: 100%;
+  margin: 0.15rem 0;
+  text-align: center;
+}
+
+.rena-chat-feed .chat-msg-system span {
+  display: inline-block;
+  padding: 0.38rem 0.65rem;
+  border: 1px dashed rgba(90, 193, 233, 0.2);
+  border-radius: 10px;
+  color: #7da9c0;
+  background: rgba(7, 31, 61, 0.58);
+  font-size: 0.58rem;
+}
+
+.chat-input-form.rena-chat-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.75rem 0.85rem 0.85rem;
+  border-top: 1px solid rgba(90, 176, 219, 0.12);
+  background: rgba(5, 19, 42, 0.96);
+}
+
+.rena-chat-composer__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.15rem;
+  color: #6489a3;
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+.rena-chat-composer__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.rena-chat-composer .chat-input-field {
+  min-height: 44px;
+  max-height: 92px;
+  padding: 0.72rem 0.8rem;
+  resize: none;
+  border: 1px solid rgba(99, 180, 224, 0.18);
+  border-radius: 14px;
+  color: #e9f7ff;
+  background: rgba(9, 34, 70, 0.72);
+  font-family: inherit;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.rena-chat-composer .chat-input-field:focus {
+  border-color: rgba(17, 217, 245, 0.58);
+  background: rgba(11, 43, 85, 0.84);
+  box-shadow: 0 0 0 3px rgba(17, 217, 245, 0.07);
+}
+
+.rena-chat-composer .chat-send-btn {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid rgba(121, 235, 255, 0.22);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #146cff, #09b8d3);
+  box-shadow: 0 9px 22px rgba(5, 117, 210, 0.26);
+}
+
+@media (max-width: 480px) {
+  .wartop-chat-widget {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .rena-chat-launch.chat-float-btn {
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    justify-content: center;
+    padding: 0;
+    border-radius: 16px;
+  }
+
+  .rena-chat-launch__copy {
+    display: none;
+  }
+
+  .chat-window.rena-chat-window {
+    right: 10px;
+    bottom: 76px;
+    left: 10px;
+    width: auto;
+    height: min(610px, calc(100dvh - 90px));
+    border-radius: 20px;
+  }
+
+  .rena-chat-header {
+    padding: 0.85rem 0.8rem 0.75rem;
+  }
+
+  .rena-chat-toolbar {
+    padding-inline: 0.8rem;
+  }
+
+  .chat-messages-container.rena-chat-feed {
+    padding: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-window.rena-chat-window,
+  .rena-chat-launch.chat-float-btn {
+    animation: none;
+    transition: none;
+  }
+}

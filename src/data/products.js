@@ -6,8 +6,6 @@ export const categories = [
   { id: '1', name: 'Top up Game' },
   { id: '2', name: 'Voucher Game' },
   { id: '3', name: 'Hiburan' },
-  { id: '4', name: 'Pulsa & Paket Data' },
-  { id: '6', name: 'E-Wallet' },
   { id: '7', name: 'Tagihan' },
   { id: '8', name: 'Gift Card' },
   { id: '9', name: 'AI Premium' }
@@ -339,40 +337,6 @@ export const products = [
       { id: 'sp-1m', name: 'Spotify Premium 1 Bulan', originalPrice: 20000, price: 18000, points: 15 }
     ]
   },
-  // E-Wallet
-  {
-    id: 'dana-topup',
-    name: 'DANA',
-    category: '6',
-    image: productImages['koin-ungu-md'],
-    popular: false,
-    discount: '',
-    inputLabel: 'Masukkan Nomor Telepon DANA',
-    inputFields: [
-      { name: 'userId', placeholder: 'Nomor DANA (e.g. 0812xxx)', type: 'number' }
-    ],
-    denominations: [
-      { id: 'dana-10', name: 'Saldo Rp 10.000', originalPrice: 11500, price: 10800, points: 10 },
-      { id: 'dana-50', name: 'Saldo Rp 50.000', originalPrice: 51500, price: 50400, points: 50 },
-      { id: 'dana-100', name: 'Saldo Rp 100.000', originalPrice: 101500, price: 100200, points: 100 }
-    ]
-  },
-  {
-    id: 'gopay-topup',
-    name: 'GoPay',
-    category: '6',
-    image: productImages['koin-ungu-md'],
-    popular: false,
-    discount: '',
-    inputLabel: 'Masukkan Nomor Telepon GoPay',
-    inputFields: [
-      { name: 'userId', placeholder: 'Nomor GoPay (e.g. 0812xxx)', type: 'number' }
-    ],
-    denominations: [
-      { id: 'gopay-20', name: 'Saldo Rp 20.000', originalPrice: 21500, price: 20500, points: 15 },
-      { id: 'gopay-50', name: 'Saldo Rp 50.000', originalPrice: 51500, price: 50400, points: 45 }
-    ]
-  }
 ];
 export const paymentChannels = [
   {
@@ -389,46 +353,6 @@ export const paymentChannels = [
     name: 'QRIS',
     image: paymentImages.qris,
     feePercent: 0.007,
-    feeFlat: 0
-  },
-  {
-    id: 'dana',
-    category: 'E-Wallet',
-    name: 'DANA',
-    image: paymentImages.dana,
-    feePercent: 0,
-    feeFlat: 1500
-  },
-  {
-    id: 'gopay',
-    category: 'E-Wallet',
-    name: 'GoPay',
-    image: paymentImages.gopay,
-    feePercent: 0.02,
-    feeFlat: 0
-  },
-  {
-    id: 'ovo',
-    category: 'E-Wallet',
-    name: 'OVO',
-    image: paymentImages.ovo,
-    feePercent: 0.015,
-    feeFlat: 0
-  },
-  {
-    id: 'shopeepay',
-    category: 'E-Wallet',
-    name: 'ShopeePay',
-    image: paymentImages.shopeepay,
-    feePercent: 0.01,
-    feeFlat: 0
-  },
-  {
-    id: 'linkaja',
-    category: 'E-Wallet',
-    name: 'LinkAja',
-    image: paymentImages.linkaja,
-    feePercent: 0.01,
     feeFlat: 0
   },
   {

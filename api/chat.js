@@ -91,8 +91,8 @@ function looksLikeWartopTopic(message, productNames) {
   const text = message.toLowerCase();
   const keywords = [
     'wartop', 'top up', 'topup', 'voucher', 'game', 'diamond', 'transaksi',
-    'invoice', 'status', 'bayar', 'pembayaran', 'qris', 'dana', 'gopay',
-    'ovo', 'shopeepay', 'linkaja', 'bank', 'virtual account', 'admin',
+    'invoice', 'status', 'bayar', 'pembayaran', 'qris', 'bank',
+    'virtual account', 'admin',
     'cs', 'bantuan', 'refund', 'promo', 'diskon', 'harga', 'produk',
     'login', 'akun', 'riwayat', 'halo', 'hai', 'kak', 'saldo', 'dompet',
     'withdraw', 'tarik saldo', 'top up saldo', 'wallet', 'tools',
@@ -154,7 +154,7 @@ function buildLocalReply({ message, products, paymentChannels, transactions, use
     };
   }
 
-  if (/metode bayar|pembayaran|qris|e-wallet|bank|alfamart|indomaret/.test(text)) {
+  if (/metode bayar|pembayaran|qris|bank|alfamart|indomaret/.test(text)) {
     const categories = Array.from(new Set(paymentChannels.map((channel) => channel.category).filter(Boolean)));
     return {
       reply: `Metode pembayaran Wartop tersedia melalui ${categories.slice(0, 6).join(', ')}. Biaya layanan ditampilkan di ringkasan sebelum kamu membuat invoice.`,
@@ -298,7 +298,7 @@ Jangan membuat data transaksi, status, harga, atau promo yang tidak ada di konte
 Jawab dalam bahasa Indonesia ramah, maksimal 3 kalimat pendek.`;
 
   const contextPrompt = JSON.stringify({
-    site: 'Wartop.shop - platform top up game, voucher game, hiburan digital, dan e-wallet.',
+    site: 'Wartop.shop - platform top up game, voucher game, hiburan digital, dan layanan AI premium.',
     user,
     mechanics,
     promos,

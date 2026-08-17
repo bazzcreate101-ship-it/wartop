@@ -178,7 +178,8 @@ export function settleWalletEffectsForTransaction(transaction, actor = 'system')
 }
 
 export function getWithdrawalRequests() {
-  return readStorageList(WALLET_WITHDRAWALS_KEY);
+  return readStorageList(WALLET_WITHDRAWALS_KEY)
+    .filter((request) => String(request?.destinationType || '').toLowerCase() === 'bank');
 }
 
 function saveWithdrawalRequests(requests) {
@@ -199,7 +200,7 @@ export function createWithdrawalRequest(email, payload) {
     amount,
     fee,
     payoutAmount,
-    destinationType: cleanWalletText(payload?.destinationType || 'E-Wallet', 40),
+    destinationType: 'Bank',
     provider: cleanWalletText(payload?.provider, 40),
     accountName: cleanWalletText(payload?.accountName, 80),
     accountNumber: cleanWalletText(payload?.accountNumber, 60),

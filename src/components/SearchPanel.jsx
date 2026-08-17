@@ -34,7 +34,7 @@ export default function SearchPanel({ isOpen, products, onClose, onSelectProduct
               id="globalSearchInput"
               type="search"
               className="form-control"
-              placeholder="Cari game, voucher, atau digital e-wallet..."
+              placeholder="Cari game, voucher, hiburan, atau AI..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoComplete="off"

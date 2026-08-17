@@ -165,7 +165,7 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
                 <article className="gvx-faq-highlight">
                   <span className="gvx-faq-highlight-badge">Fleksibel</span>
                   <h3 className="gvx-faq-highlight-title">Metode pembayaran lengkap</h3>
-                  <p className="gvx-faq-highlight-copy">Dari e-wallet, bank, pulsa, sampai minimarket - pilih cara yang paling nyaman buat kamu.</p>
+                  <p className="gvx-faq-highlight-copy">Dari QRIS, virtual account bank, Saldo Wartop, sampai minimarket—pilih cara yang paling nyaman buat kamu.</p>
                 </article>
                 <article className="gvx-faq-highlight">
                   <span className="gvx-faq-highlight-badge">Support</span>

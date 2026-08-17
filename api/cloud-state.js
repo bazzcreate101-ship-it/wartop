@@ -151,19 +151,41 @@ function sanitizeWalletLedger(value) {
 
 function sanitizeWithdrawals(value) {
   if (!Array.isArray(value)) return value;
-  return value.map((withdrawal) => {
+  return value
+    .filter((withdrawal) => String(withdrawal?.destinationType || '').toLowerCase() === 'bank')
+    .map((withdrawal) => {
     if (!withdrawal || typeof withdrawal !== 'object') return withdrawal;
-    if (!hasCompromisedText(JSON.stringify(withdrawal))) return withdrawal;
+    if (!hasCompromisedText(JSON.stringify(withdrawal))) {
+      return { ...withdrawal, destinationType: 'Bank' };
+    }
     return {
       ...scrubCompromisedStrings(withdrawal),
-      provider: hasCompromisedText(withdrawal.provider) ? 'Bank/E-Wallet' : withdrawal.provider,
+      destinationType: 'Bank',
+      provider: hasCompromisedText(withdrawal.provider) ? 'Bank' : withdrawal.provider,
       accountName: hasCompromisedText(withdrawal.accountName) ? '' : withdrawal.accountName,
     };
   });
 }
 
+function removeRetiredProducts(value) {
+  if (!Array.isArray(value)) return value;
+  const retiredCategories = new Set(['4', '6']);
+  const retiredIds = new Set([
+    ['da', 'na-topup'].join(''),
+    ['go', 'pay-topup'].join(''),
+  ]);
+  return value.filter((product) => (
+    product?.id &&
+    !retiredIds.has(String(product.id)) &&
+    !retiredCategories.has(String(product.category || ''))
+  ));
+}
+
 function sanitizeStateValue(key, value) {
-  if (key === 'wartop_products' && isCompromisedProductState(value)) return [];
+  if (key === 'wartop_products') {
+    if (isCompromisedProductState(value)) return [];
+    return removeRetiredProducts(value);
+  }
   if (key === 'wartop_chat_messages') return sanitizeChatMessages(value);
   if (key === 'wartop_chat_threads') return sanitizeChatThreads(value);
   if (key === 'wartop_wallet_ledger') return sanitizeWalletLedger(value);

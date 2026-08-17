@@ -18,6 +18,7 @@ const CLIENT_COOLDOWN_MS = 1800;
 const CHAT_HISTORY_LIMIT = 300;
 const CHAT_SYNC_KEYS = ['wartop_chat_threads'];
 const SAFE_AI_ERROR_MESSAGE = 'Koneksi Rena sempat terputus. Coba kirim ulang pesanmu sebentar lagi, ya.';
+const QUICK_PROMPTS = ['Rekomendasi game', 'Cek paket ChatGPT', 'Cara pembayaran'];
 const makeMessageId = (prefix = 'msg') => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export default function ChatWidget({ products, user, transactions }) {
@@ -207,7 +208,7 @@ export default function ChatWidget({ products, user, transactions }) {
         'Jika saldo tidak cukup, user harus top up saldo atau pilih metode pembayaran lain.',
         'Top up saldo Wartop hanya melalui QRIS, minimal Rp50.000 dan maksimal Rp5.000.000.',
         'Transaksi gagal yang sudah mendebit dana akan refund otomatis ke Saldo Wartop.',
-        'Tarik saldo bisa ke e-wallet atau bank, minimal Rp100.000, fee 0,7%.',
+        'Tarik saldo hanya ke rekening bank, minimal Rp100.000, fee 0,7%.',
       ],
       entries: walletEntries,
       withdrawals,
@@ -225,6 +226,15 @@ export default function ChatWidget({ products, user, transactions }) {
       text,
     });
     saveState([...baseMessages, sysMsg], true, null);
+  };
+
+  const handleReturnToRena = () => {
+    const sysMsg = createChatMessage({
+      id: makeMessageId('sys'),
+      sender: 'system',
+      text: 'Mode bantuan dikembalikan ke Rena.',
+    });
+    saveState([...messages, sysMsg], false, null);
   };
 
   const handleSendMessage = async (e) => {
@@ -310,40 +320,75 @@ export default function ChatWidget({ products, user, transactions }) {
   return (
     <div className="wartop-chat-widget">
       <button
-        className="chat-float-btn"
+        className={`chat-float-btn rena-chat-launch${isOpen ? ' is-open' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Hubungi Customer Service"
+        aria-expanded={isOpen}
       >
         <span className="chat-badge-pulse"></span>
         {isOpen ? (
-          <i className="bi bi-x-lg text-white" style={{ fontSize: '1.4rem' }}></i>
+          <i className="bi bi-x-lg text-white rena-chat-launch__close"></i>
         ) : (
-          <img src={brandMark} alt="Wartop" className="chat-brand-mark" />
+          <>
+            <span className="rena-chat-launch__mark"><img src={brandMark} alt="" className="chat-brand-mark" /></span>
+            <span className="rena-chat-launch__copy">
+              <small>Butuh bantuan?</small>
+              <strong>Chat Rena</strong>
+            </span>
+          </>
         )}
       </button>
 
       {isOpen && (
-        <div className="chat-window">
-          <div className="chat-header">
-            <div className="d-flex align-items-center gap-2">
-              <div className="chat-avatar-wrapper">
-                <div className="chat-avatar-icon"><img src={brandMark} alt="" /></div>
-                <span className="chat-status-dot"></span>
+        <section className="chat-window rena-chat-window" aria-label="Chat bantuan Wartop">
+          <header className="rena-chat-header">
+            <div className="rena-chat-header__agent">
+              <div className="rena-chat-avatar">
+                <img src={brandMark} alt="" />
+                <span aria-hidden="true"></span>
               </div>
-              <div className="chat-header-text">
-                <div className="chat-agent-name">
+              <div className="rena-chat-header__copy">
+                <span className="rena-chat-header__eyebrow">Wartop support desk</span>
+                <strong>
                   {adminMode
-                    ? (activeAdmin ? `Admin ${activeAdmin}` : 'Menghubungkan ke Admin...')
-                    : 'Rena - Asisten Wartop'}
-                </div>
-                <div className="chat-agent-sub">
-                  {adminMode ? 'Admin Live Support' : 'AI Customer Assistant'}
-                </div>
+                    ? (activeAdmin ? `Admin ${activeAdmin}` : 'Tim CS Wartop')
+                    : 'Rena'}
+                </strong>
               </div>
             </div>
+            <div className="rena-chat-header__actions">
+              <span className={`rena-chat-mode${adminMode ? ' is-admin' : ''}`}>
+                <i className={`bi ${adminMode ? 'bi-headset' : 'bi-stars'}`} aria-hidden="true"></i>
+                {adminMode ? (activeAdmin ? 'Live' : 'Antrean') : 'AI aktif'}
+              </span>
+              <button type="button" onClick={() => setIsOpen(false)} aria-label="Tutup chat">
+                <i className="bi bi-x-lg" aria-hidden="true"></i>
+              </button>
+            </div>
+          </header>
+
+          <div className="rena-chat-toolbar">
+            <span>
+              <i className={`bi ${adminMode ? 'bi-person-workspace' : 'bi-compass'}`} aria-hidden="true"></i>
+              {adminMode ? 'Percakapan dialihkan ke tim dukungan' : 'Produk, pembayaran, dan pesanan'}
+            </span>
+            {adminMode && (
+              <button type="button" onClick={handleReturnToRena}>Kembali ke Rena</button>
+            )}
           </div>
 
-          <div className="chat-messages-container">
+          <div className="chat-messages-container rena-chat-feed">
+            {!adminMode && messages.length <= 1 && (
+              <div className="rena-chat-quick-prompts" aria-label="Pertanyaan cepat">
+                <span>Coba tanyakan</span>
+                <div>
+                  {QUICK_PROMPTS.map((prompt) => (
+                    <button key={prompt} type="button" onClick={() => setInputText(prompt)}>{prompt}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {messages.map((m) => {
               if (m.sender === 'system') {
                 return (
@@ -357,11 +402,12 @@ export default function ChatWidget({ products, user, transactions }) {
               return (
                 <div key={m.id} className={`chat-bubble-row ${isMe ? 'chat-row-user' : 'chat-row-agent'}`}>
                   {!isMe && (
-                    <span className="chat-bubble-sender">
-                      {m.agent || 'Admin'}
+                    <span className="chat-bubble-sender rena-chat-sender">
+                      <span aria-hidden="true">{(m.agent || 'Admin').charAt(0)}</span>
+                      {m.agent || 'Admin Wartop'}
                     </span>
                   )}
-                  <div className={`chat-bubble ${isMe ? 'bubble-user' : 'bubble-agent'}`}>
+                  <div className={`chat-bubble rena-chat-bubble ${isMe ? 'bubble-user' : 'bubble-agent'}`}>
                     {m.text}
                     <div className="chat-bubble-time">{m.timestamp}</div>
                   </div>
@@ -384,25 +430,38 @@ export default function ChatWidget({ products, user, transactions }) {
             <div ref={messagesEndRef} />
           </div>
 
-          <form className="chat-input-form" onSubmit={handleSendMessage}>
-            <input
-              type="text"
-              maxLength={MAX_MESSAGE_LENGTH}
-              placeholder="Tulis pesan seputar Wartop..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="chat-input-field"
-              disabled={!chatReady}
-            />
-            <button
-              type="submit"
-              className="chat-send-btn"
-              disabled={!chatReady || !inputText.trim() || isTyping || Date.now() < cooldownUntil}
-            >
-              <i className="bi bi-send-fill text-white"></i>
-            </button>
+          <form className="chat-input-form rena-chat-composer" onSubmit={handleSendMessage}>
+            <div className="rena-chat-composer__meta">
+              <span>{adminMode ? 'Kirim ke Tim CS' : 'Tanya Rena'}</span>
+              <span>{inputText.length}/{MAX_MESSAGE_LENGTH}</span>
+            </div>
+            <div className="rena-chat-composer__row">
+              <textarea
+                rows="1"
+                maxLength={MAX_MESSAGE_LENGTH}
+                placeholder="Tulis pesanmu di sini..."
+                value={inputText}
+                onChange={(event) => setInputText(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    event.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                className="chat-input-field"
+                disabled={!chatReady}
+              />
+              <button
+                type="submit"
+                className="chat-send-btn"
+                aria-label="Kirim pesan"
+                disabled={!chatReady || !inputText.trim() || isTyping || Date.now() < cooldownUntil}
+              >
+                <i className="bi bi-arrow-up text-white"></i>
+              </button>
+            </div>
           </form>
-        </div>
+        </section>
       )}
 
       {hasUnreadAdminMessage && (
