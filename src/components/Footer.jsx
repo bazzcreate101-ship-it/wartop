@@ -1,5 +1,6 @@
 import React from 'react';
 import { brandWordmark } from '../assets/images';
+import { supportInfo } from '../data/siteInfo';
 
 const paymentLogoList = [
   ['Saldo Wartop', '/gassets/payment/wartop-balance.svg'],
@@ -36,6 +37,22 @@ const complianceBadges = [
   },
 ];
 
+function WhatsAppContact({ className = '', children }) {
+  if (supportInfo.whatsappUrl) {
+    return (
+      <a className={className} href={supportInfo.whatsappUrl} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <span className={`${className} footer-contact--placeholder`} title="Nomor WhatsApp placeholder — belum aktif">
+      {children}
+    </span>
+  );
+}
+
 
 export default function Footer({ onNavigate }) {
   return (
@@ -57,7 +74,7 @@ export default function Footer({ onNavigate }) {
             <a className="contact-a faq-body" href="/page/privacy" onClick={(e) => { e.preventDefault(); onNavigate('page', 'privacy'); }}>Kebijakan Privasi</a><br />
             <a className="contact-a faq-body" href="/page/terms" onClick={(e) => { e.preventDefault(); onNavigate('page', 'terms'); }}>Syarat & Ketentuan</a><br />
             <a className="contact-a faq-body" href="/page/disclaimer" onClick={(e) => { e.preventDefault(); onNavigate('page', 'disclaimer'); }}>Disclaimer</a><br />
-            <a className="contact-a faq-body" href="https://wa.me/6281388427196" target="_blank" rel="noreferrer">Pendaftaran Mitra / Reseller</a><br />
+            <WhatsAppContact className="contact-a faq-body">Pendaftaran Mitra / Reseller</WhatsAppContact><br />
           </div>
 
           <div className="col-md-3 col-6 text-start" style={{ marginTop: '20px' }}>
@@ -71,9 +88,9 @@ export default function Footer({ onNavigate }) {
 
           <div className="col-md-3 col-12 text-start" style={{ marginTop: '20px' }}>
             <h3 className="title-footer2">BUTUH BANTUAN?</h3>
-            <a className="faq-body d-block mb-3" href="https://wa.me/6281388427196" target="_blank" rel="noreferrer">
-              <i className="bi bi-chat-dots-fill me-2 text-success"></i> WhatsApp CS: +62 813-8842-7196
-            </a>
+            <WhatsAppContact className="faq-body d-block mb-3">
+              <i className="bi bi-chat-dots-fill me-2 text-secondary"></i> WhatsApp CS: {supportInfo.whatsapp}
+            </WhatsAppContact>
 
             <h3 className="title-footer2">PEMBAYARAN</h3>
             <div className="gv-footer-payments">

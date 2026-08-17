@@ -4,6 +4,7 @@ import { readStorageList, writeStorageList } from '../lib/storage';
 import { buildDynamicQrisPayload } from '../lib/qris';
 import { settleWalletEffectsForTransaction } from '../lib/walletService';
 import { hydrateCloudStateKeys } from '../lib/cloudState';
+import { supportInfo } from '../data/siteInfo';
 
 const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
 
@@ -314,15 +315,27 @@ export default function InvoiceView({ invoiceData, onNavigate }) {
                   Kembali ke Beranda
                 </button>
               )}
-              <a
-                href="https://wa.me/6281388427196"
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-outline-success"
-              >
-                <i className="bi bi-whatsapp me-1"></i>
-                Bantuan CS
-              </a>
+              {supportInfo.whatsappUrl ? (
+                <a
+                  href={supportInfo.whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-outline-success"
+                >
+                  <i className="bi bi-whatsapp me-1"></i>
+                  Bantuan CS
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  title={`Nomor placeholder: ${supportInfo.whatsapp}`}
+                  disabled
+                >
+                  <i className="bi bi-whatsapp me-1"></i>
+                  WhatsApp belum aktif
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -41,7 +41,6 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
           </header>
 
           <Categories activeCategory={activeCategory} onSelectCategory={setActiveCategory} />
-          <FlashSale products={visibleProducts} onSelectProduct={onSelectProduct} />
 
           <section className="wartop-catalog" id="allContent" aria-live="polite">
             <header className="wartop-catalog__header">
@@ -137,7 +136,10 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
           </div>
         </div>
 
-        {/* 4. FAQ SECTION */}
+        {/* 4. FLASH SALE — ditempatkan setelah berita agar alur beranda lebih editorial */}
+        <FlashSale products={visibleProducts} onSelectProduct={onSelectProduct} />
+
+        {/* 5. FAQ SECTION */}
         <section className="gvx-faq-section mb-4" aria-labelledby="faqTitle">
           <div className="gvx-faq-container">
             <div className="gvx-faq-wrapper">

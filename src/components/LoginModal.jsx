@@ -163,7 +163,7 @@ export default function LoginModal({ isOpen, onClose, onAuthenticated }) {
                       <span>Username</span>
                       <div className="member-auth-control">
                         <i className="bi bi-person" aria-hidden="true"></i>
-                        <input name="username" value={form.username} onChange={updateField} minLength="3" maxLength="24" autoComplete="username" placeholder="contoh: bagas.store" required />
+                        <input name="username" value={form.username} onChange={updateField} minLength="3" maxLength="24" autoComplete="username" placeholder="contoh: asep.budiman" required />
                       </div>
                     </label>
                     <label className="member-auth-field">

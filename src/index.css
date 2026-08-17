@@ -5320,7 +5320,7 @@ a {
 /* Wartop image banner carousel */
 .wartop-banner-wrap {
   width: 100%;
-  max-width: 1870px;
+  max-width: 1128px;
   margin: 0.75rem auto 1.75rem;
   padding-inline: clamp(0.45rem, 1.5vw, 1.5rem);
 }
@@ -5328,7 +5328,7 @@ a {
 .wartop-banner {
   position: relative;
   width: 100%;
-  max-width: 1810px;
+  max-width: 1080px;
   margin-inline: auto;
   isolation: isolate;
 }
@@ -5862,5 +5862,384 @@ footer strong {
 
   .wartop-hero__chips span:nth-child(3) {
     display: none;
+  }
+}
+
+/* Wartop account panel — compact command-center layout */
+.wartop-profile-anchor {
+  position: relative;
+}
+
+.wartop-profile-trigger {
+  display: flex;
+  max-width: 190px;
+  height: 44px;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.3rem;
+  border: 1px solid rgba(77, 205, 255, 0.2);
+  border-radius: 14px;
+  color: #eaf8ff;
+  background: linear-gradient(145deg, rgba(14, 40, 80, 0.92), rgba(7, 22, 48, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.wartop-profile-trigger:hover,
+.wartop-profile-trigger[aria-expanded='true'] {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: linear-gradient(145deg, rgba(18, 56, 108, 0.96), rgba(8, 28, 61, 0.98));
+  transform: translateY(-1px);
+}
+
+.wartop-profile-trigger:focus-visible {
+  outline: 2px solid #53e5ff;
+  outline-offset: 3px;
+}
+
+.wartop-profile-avatar {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(139, 241, 255, 0.42);
+  border-radius: 14px;
+  color: #ffffff;
+  background: linear-gradient(145deg, #146cff, #08bfdc);
+  box-shadow: 0 8px 24px rgba(11, 119, 224, 0.3);
+  font-family: 'Oxanium', 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  object-fit: cover;
+}
+
+.wartop-profile-avatar--trigger {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 0.72rem;
+}
+
+.wartop-profile-trigger__copy {
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.wartop-profile-trigger__copy small {
+  margin-bottom: 0.18rem;
+  color: #76bdd9;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wartop-profile-trigger__copy strong {
+  max-width: 102px;
+  overflow: hidden;
+  font-size: 0.73rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wartop-profile-trigger__chevron {
+  margin-left: auto;
+  color: #69dff5;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.wartop-profile-trigger__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu.wartop-profile-panel {
+  position: absolute;
+  z-index: 1100;
+  top: calc(100% + 12px);
+  right: 0;
+  left: auto;
+  width: min(390px, calc(100vw - 24px));
+  padding: 1.15rem;
+  overflow: hidden;
+  border: 1px solid rgba(64, 196, 255, 0.22);
+  border-radius: 22px;
+  color: #eaf7ff;
+  background:
+    radial-gradient(circle at 100% 0, rgba(17, 217, 245, 0.14), transparent 13rem),
+    linear-gradient(160deg, rgba(10, 30, 64, 0.99), rgba(5, 17, 38, 0.99));
+  box-shadow: 0 28px 74px rgba(0, 8, 28, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: wartopProfileEnter 0.2s ease both;
+}
+
+.wartop-profile-panel__topline {
+  position: absolute;
+  top: 0;
+  left: 1.15rem;
+  width: 74px;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #146cff, #11d9f5);
+  box-shadow: 0 0 18px rgba(17, 217, 245, 0.54);
+}
+
+.wartop-profile-panel__identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.2rem 0 1rem;
+}
+
+.wartop-profile-avatar--panel {
+  width: 52px;
+  height: 52px;
+  font-size: 0.95rem;
+}
+
+.wartop-profile-panel__user {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.wartop-profile-panel__name,
+.wartop-profile-panel__email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wartop-profile-panel__name {
+  color: #ffffff;
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.wartop-profile-panel__email {
+  margin-top: 0.22rem;
+  color: #86a5bf;
+  font-size: 0.69rem;
+}
+
+.wartop-profile-panel__member {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgba(17, 217, 245, 0.22);
+  border-radius: 999px;
+  color: #a5f4ff;
+  background: rgba(17, 217, 245, 0.08);
+  font-size: 0.61rem;
+  font-weight: 800;
+}
+
+.wartop-profile-balance {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(72, 187, 255, 0.19);
+  border-radius: 16px;
+  color: inherit;
+  background: linear-gradient(120deg, rgba(20, 108, 255, 0.19), rgba(17, 217, 245, 0.08));
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.wartop-profile-balance:hover {
+  border-color: rgba(17, 217, 245, 0.48);
+  color: inherit;
+  transform: translateY(-2px);
+}
+
+.wartop-profile-balance__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  color: #b7f7ff;
+  background: rgba(20, 108, 255, 0.28);
+  font-size: 1.15rem;
+}
+
+.wartop-profile-balance__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.wartop-profile-balance__copy small {
+  color: #8fb2cb;
+  font-size: 0.65rem;
+}
+
+.wartop-profile-balance__copy strong {
+  margin-top: 0.15rem;
+  color: #ffffff;
+  font-family: 'Oxanium', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem;
+}
+
+.wartop-profile-balance__arrow {
+  color: #62e6f7;
+}
+
+.wartop-profile-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0.9rem 0;
+  padding: 0.8rem 0;
+  border-top: 1px solid rgba(103, 179, 222, 0.12);
+  border-bottom: 1px solid rgba(103, 179, 222, 0.12);
+}
+
+.wartop-profile-metrics > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.wartop-profile-metrics > div + div {
+  border-left: 1px solid rgba(103, 179, 222, 0.14);
+}
+
+.wartop-profile-metrics span {
+  color: #7899b4;
+  font-size: 0.61rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.wartop-profile-metrics strong {
+  color: #62e6f7;
+  font-family: 'Oxanium', 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.96rem;
+}
+
+.wartop-profile-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.wartop-profile-shortcuts a {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem;
+  border: 1px solid rgba(84, 179, 231, 0.14);
+  border-radius: 14px;
+  color: #d9effb;
+  background: rgba(8, 27, 58, 0.7);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.wartop-profile-shortcuts a:hover {
+  border-color: rgba(17, 217, 245, 0.38);
+  color: #ffffff;
+  background: rgba(15, 55, 101, 0.72);
+}
+
+.wartop-profile-shortcuts > a > i {
+  color: #55dff3;
+  font-size: 1.15rem;
+}
+
+.wartop-profile-shortcuts span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.18;
+}
+
+.wartop-profile-shortcuts strong {
+  font-size: 0.72rem;
+}
+
+.wartop-profile-shortcuts small {
+  margin-top: 0.18rem;
+  color: #7393ae;
+  font-size: 0.58rem;
+}
+
+.wartop-profile-logout {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 12px;
+  color: #ffacb3;
+  background: transparent;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.wartop-profile-logout:hover {
+  color: #ffd4d8;
+  background: rgba(255, 76, 95, 0.1);
+}
+
+.wartop-profile-logout span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-contact--placeholder {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+@keyframes wartopProfileEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-7px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .wartop-profile-trigger {
+    width: 40px;
+    height: 40px;
+    padding: 0.2rem;
+    border-radius: 12px;
+  }
+
+  .wartop-profile-avatar--trigger {
+    width: 34px;
+    height: 34px;
+  }
+
+  .dropdown-menu.wartop-profile-panel {
+    position: fixed;
+    top: 74px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: 390px;
+    margin-left: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-menu.wartop-profile-panel {
+    animation: none;
   }
 }

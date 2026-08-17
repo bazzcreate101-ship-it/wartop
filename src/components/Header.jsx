@@ -20,6 +20,14 @@ export default function Header({
   const successTransactions = userTransactions.filter((tx) => tx.status === 'success');
   const userPoints = successTransactions.reduce((sum, tx) => sum + Number(tx.points || 0), 0);
   const walletBalance = isLoggedIn ? getWalletBalance(user.email) : 0;
+  const displayName = userProfile?.name || userProfile?.username || 'Member Wartop';
+  const profilePicture = userProfile?.picture || '';
+  const profileInitials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('') || 'W';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -104,80 +112,104 @@ export default function Header({
 
             {/* Profile or Login */}
             {isLoggedIn ? (
-              <div className="dropdown dd-anchor" ref={dropdownRef}>
+              <div className="dropdown wartop-profile-anchor" ref={dropdownRef}>
                 <button
-                  className="btn btn-sm p-0 border-0 d-flex align-items-center"
+                  className="wartop-profile-trigger"
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  style={{ background: 'transparent' }}
                   type="button"
+                  aria-haspopup="dialog"
+                  aria-expanded={profileDropdownOpen}
+                  aria-label="Buka profil akun"
                 >
-                  <img
-                    src={userProfile?.picture || "https://lh3.googleusercontent.com/a/default-user=s100"}
-                    alt="Profile"
-                    className="profile_img"
-                    onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
-                  />
+                  {profilePicture ? (
+                    <img
+                      src={profilePicture}
+                      alt=""
+                      className="wartop-profile-avatar wartop-profile-avatar--trigger"
+                      onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
+                    />
+                  ) : (
+                    <span className="wartop-profile-avatar wartop-profile-avatar--trigger" aria-hidden="true">{profileInitials}</span>
+                  )}
+                  <span className="wartop-profile-trigger__copy d-none d-lg-flex">
+                    <small>Akun</small>
+                    <strong>{displayName}</strong>
+                  </span>
+                  <i className={`bx bx-chevron-down wartop-profile-trigger__chevron d-none d-lg-inline ${profileDropdownOpen ? 'is-open' : ''}`} aria-hidden="true"></i>
                 </button>
 
                 {profileDropdownOpen && (
-                  <div className="dropdown-menu glass-dd show d-block" style={{ position: 'absolute', right: 0, top: '42px' }}>
-                    <div className="dd-header dd-header--profile">
-                      <img
-                        src={userProfile?.picture || "https://lh3.googleusercontent.com/a/default-user=s100"}
-                        alt="Avatar"
-                        className="dd-avatar"
-                        onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
-                      />
-                      <div className="dd-userblock">
-                        <span className="dd-email fw-bold">{userProfile?.name || 'Member Wartop'}</span>
-                        <span className="small text-secondary" style={{ fontSize: '0.78rem' }}>{userProfile?.email}</span>
-                        <span className="dd-member-badge">Member Wartop</span>
+                  <div className="dropdown-menu wartop-profile-panel show d-block" role="dialog" aria-label="Ringkasan profil">
+                    <div className="wartop-profile-panel__topline" aria-hidden="true"></div>
+
+                    <div className="wartop-profile-panel__identity">
+                      {profilePicture ? (
+                        <img
+                          src={profilePicture}
+                          alt=""
+                          className="wartop-profile-avatar wartop-profile-avatar--panel"
+                          onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
+                        />
+                      ) : (
+                        <span className="wartop-profile-avatar wartop-profile-avatar--panel" aria-hidden="true">{profileInitials}</span>
+                      )}
+                      <div className="wartop-profile-panel__user">
+                        <span className="wartop-profile-panel__name">{displayName}</span>
+                        <span className="wartop-profile-panel__email">{userProfile?.email}</span>
+                      </div>
+                      <span className="wartop-profile-panel__member" title="Member Wartop">
+                        <i className="bi bi-patch-check-fill" aria-hidden="true"></i>
+                        Member
+                      </span>
+                    </div>
+
+                    <a
+                      href="/wallet"
+                      className="wartop-profile-balance"
+                      onClick={(event) => { handleNavClick('wallet', event); setProfileDropdownOpen(false); }}
+                    >
+                      <span className="wartop-profile-balance__icon"><i className="bx bx-wallet" aria-hidden="true"></i></span>
+                      <span className="wartop-profile-balance__copy">
+                        <small>Saldo tersedia</small>
+                        <strong>Rp{walletBalance.toLocaleString('id-ID')}</strong>
+                      </span>
+                      <span className="wartop-profile-balance__arrow"><i className="bi bi-arrow-up-right" aria-hidden="true"></i></span>
+                    </a>
+
+                    <div className="wartop-profile-metrics" aria-label="Statistik akun">
+                      <div>
+                        <span>Poin</span>
+                        <strong>{userPoints.toLocaleString('id-ID')}</strong>
+                      </div>
+                      <div>
+                        <span>Pesanan</span>
+                        <strong>{userTransactions.length}</strong>
+                      </div>
+                      <div>
+                        <span>Berhasil</span>
+                        <strong>{successTransactions.length}</strong>
                       </div>
                     </div>
 
-                    <div className="dd-inner mt-2">
-                      <div className="wallet-tiles">
-                        <div className="wallet-tile tile-coin">
-                          <div className="wallet-icon">🪙</div>
-                          <div className="wallet-meta">
-                            <div className="wallet-title">Saldo</div>
-                            <div className="wallet-value text-success">Rp{walletBalance.toLocaleString('id-ID')}</div>
-                          </div>
-                        </div>
-                        <div className="wallet-tile tile-gp">
-                          <div className="wallet-icon">🎁</div>
-                          <div className="wallet-meta">
-                            <div className="wallet-title">Poin</div>
-                            <div className="wallet-value text-info">{userPoints.toLocaleString('id-ID')}</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="profile-mini-stats">
-                        <div>
-                          <strong>{userTransactions.length}</strong>
-                          <span>Transaksi</span>
-                        </div>
-                        <div>
-                          <strong>{successTransactions.length}</strong>
-                          <span>Sukses</span>
-                        </div>
-                      </div>
+                    <nav className="wartop-profile-shortcuts" aria-label="Menu akun">
+                      <a href="/wallet" onClick={(event) => { handleNavClick('wallet', event); setProfileDropdownOpen(false); }}>
+                        <i className="bx bx-wallet" aria-hidden="true"></i>
+                        <span><strong>Dompet</strong><small>Atur saldo</small></span>
+                      </a>
+                      <a href="/transactions" onClick={(event) => { handleNavClick('transactions', event); setProfileDropdownOpen(false); }}>
+                        <i className="bx bx-receipt" aria-hidden="true"></i>
+                        <span><strong>Pesanan</strong><small>Lihat riwayat</small></span>
+                      </a>
+                    </nav>
 
-                      <div className="dd-actions mt-3">
-                        <ul className="dd-list">
-                          <li className="dd-item">
-                            <a href="/wallet" onClick={(e) => { handleNavClick('wallet', e); setProfileDropdownOpen(false); }}>
-                              <i className="bx bx-wallet me-2"></i> Dompet Saya
-                            </a>
-                          </li>
-                          <li className="dd-item logout">
-                            <a href="/" onClick={(e) => { e.preventDefault(); onLogout(); setProfileDropdownOpen(false); }}>
-                              <i className="bx bx-log-out me-2"></i> Keluar
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+                    <button
+                      type="button"
+                      className="wartop-profile-logout"
+                      onClick={() => { onLogout(); setProfileDropdownOpen(false); }}
+                    >
+                      <span><i className="bx bx-log-out" aria-hidden="true"></i> Keluar dari akun</span>
+                      <i className="bi bi-arrow-right" aria-hidden="true"></i>
+                    </button>
                   </div>
                 )}
               </div>

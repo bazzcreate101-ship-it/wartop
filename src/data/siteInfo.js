@@ -10,7 +10,7 @@ export const siteMechanics = [
   'Top up Saldo Wartop hanya melalui QRIS dengan nominal minimal Rp50.000 dan maksimal Rp5.000.000.',
   'Transaksi gagal yang dananya sudah terdebit akan otomatis dikembalikan sebagai Saldo Wartop.',
   'Saldo Wartop bisa ditarik ke e-wallet atau bank dengan minimal Rp100.000 dan biaya layanan 0,7% dari nominal penarikan.',
-  'Customer support tersedia melalui WhatsApp dan chat widget Wartop.',
+  'Customer support tersedia melalui chat widget Wartop. Nomor WhatsApp dapat dikonfigurasi oleh admin.',
   'Untuk refund, pembayaran bermasalah, item belum masuk, atau komplain transaksi, chat harus dialihkan ke admin.',
 ];
 
@@ -21,6 +21,7 @@ export const promoInfo = [
 ];
 
 export const supportInfo = {
-  whatsapp: '+62 813-8842-7196',
-  whatsappUrl: 'https://wa.me/6281388427196',
+  whatsapp: '+62 000-7426-9185',
+  whatsappUrl: '',
+  isPlaceholder: true,
 };
