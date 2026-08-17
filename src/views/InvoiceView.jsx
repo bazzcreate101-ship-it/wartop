@@ -295,7 +295,7 @@ export default function InvoiceView({ invoiceData, onNavigate }) {
             </div>
 
             {/* Actions */}
-            <div className="d-flex gap-2 mt-3 flex-wrap">
+            <div className="invoice-actions d-flex gap-2 mt-3 flex-wrap">
               {paymentStatus === 'pending' && (
                 <button
                   className="btn btn-success flex-grow-1 fw-bold"

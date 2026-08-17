@@ -3286,9 +3286,11 @@ footer a:hover {
 .invoice-qris-frame {
   display: grid;
   place-items: center;
-  width: min(100%, 360px);
+  width: min(100%, 340px);
+  aspect-ratio: 1;
   margin: 0.75rem auto;
   padding: 0.8rem;
+  overflow: hidden;
   border-radius: 18px;
   background: #ffffff;
   box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
@@ -3296,9 +3298,76 @@ footer a:hover {
 
 .invoice-qris-frame img {
   width: 100%;
-  max-width: 320px;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: contain;
+}
+
+@media (max-width: 767.98px) {
+  .wallet-payment-hint {
+    width: 100%;
+    flex-wrap: wrap;
+    border-radius: 13px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .invoice-status-card {
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .invoice-status-icon {
+    font-size: 1.45rem;
+  }
+
+  .invoice-header-logo img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .invoice-row {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .invoice-label {
+    flex: 0 0 38%;
+  }
+
+  .invoice-value {
+    max-width: 62%;
+    overflow-wrap: anywhere;
+  }
+
+  .invoice-payment-box {
+    padding: 0.75rem;
+    border-radius: 14px;
+  }
+
+  .invoice-qris-frame {
+    width: min(100%, 300px);
+    padding: 0.65rem;
+    border-radius: 14px;
+  }
+
+  .invoice-actions {
+    flex-direction: column;
+  }
+
+  .invoice-actions .btn {
+    width: 100%;
+  }
+
+  .wallet-history-item {
+    flex-direction: column;
+  }
+
+  .wallet-history-item > strong,
+  .wallet-history-item > span {
+    align-self: flex-start;
+  }
 }
 
 .retail-barcode {
@@ -6721,5 +6790,16 @@ footer strong {
   .rena-chat-launch.chat-float-btn {
     animation: none;
     transition: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .wallet-page-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-balance-card strong {
+    font-size: clamp(1.75rem, 9vw, 2.25rem);
+    overflow-wrap: anywhere;
   }
 }
