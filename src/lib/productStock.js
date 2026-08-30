@@ -5,12 +5,16 @@ export const AUTO_RESTOCK_MAX = 25;
 export const randomRestockValue = () =>
   Math.floor(Math.random() * (AUTO_RESTOCK_MAX - AUTO_RESTOCK_MIN + 1)) + AUTO_RESTOCK_MIN;
 
+export const hasUnlimitedStock = (denom) => denom?.stockMode === 'unlimited';
+
 export const hasManagedStock = (product) =>
-  product.denominations?.some((denom) => Number.isFinite(Number(denom.stock)));
+  product.denominations?.some((denom) => (
+    !hasUnlimitedStock(denom) && Number.isFinite(Number(denom.stock))
+  ));
 
 export const countLowStockItems = (product) =>
   product.denominations?.filter((denom) => (
-    Number.isFinite(Number(denom.stock)) && Number(denom.stock) < AUTO_RESTOCK_THRESHOLD
+    !hasUnlimitedStock(denom) && Number.isFinite(Number(denom.stock)) && Number(denom.stock) < AUTO_RESTOCK_THRESHOLD
   )).length || 0;
 
 export function restockLowStockProduct(product) {
@@ -19,7 +23,7 @@ export function restockLowStockProduct(product) {
   let changed = 0;
   const denominations = product.denominations.map((denom) => {
     const currentStock = Number(denom.stock);
-    if (Number.isFinite(currentStock) && currentStock < AUTO_RESTOCK_THRESHOLD) {
+    if (!hasUnlimitedStock(denom) && Number.isFinite(currentStock) && currentStock < AUTO_RESTOCK_THRESHOLD) {
       changed += 1;
       return { ...denom, stock: randomRestockValue() };
     }
@@ -48,7 +52,7 @@ export function decrementProductStock(products, productId, denominationId) {
     const denominations = product.denominations.map((denom) => {
       if (denom.id !== denominationId) return denom;
       const currentStock = Number(denom.stock);
-      if (!Number.isFinite(currentStock)) return denom;
+      if (hasUnlimitedStock(denom) || !Number.isFinite(currentStock)) return denom;
       changed = true;
       return { ...denom, stock: Math.max(0, currentStock - 1) };
     });

@@ -749,7 +749,8 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
       originalPrice: Number(denom.originalPrice || denom.price || 0),
       price: Number(denom.price || 0),
       points: Number(denom.points || 0),
-      stock: Number(denom.stock || 0),
+      stockMode: denom.stockMode === 'unlimited' ? 'unlimited' : 'limited',
+      stock: denom.stockMode === 'unlimited' ? undefined : Math.max(0, Number(denom.stock || 0)),
       accessType: cleanAdminText(denom.accessType || '', 40),
       duration: cleanAdminText(denom.duration || '', 80),
       warranty: cleanAdminText(denom.warranty || '', 100),
@@ -802,6 +803,7 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
       originalPrice: 30000,
       price: 28000,
       points: 100,
+      stockMode: 'limited',
       stock: 10
     };
     setFormData({
@@ -1171,10 +1173,20 @@ export default function AdminDashboard({ products, onUpdateProducts, adminUser, 
                             <input
                               type="number"
                               className="form-control order-input form-control-sm"
-                              value={Number.isFinite(Number(denom.stock)) ? denom.stock : ''}
+                              value={denom.stockMode === 'unlimited' ? '' : Number.isFinite(Number(denom.stock)) ? denom.stock : ''}
                               onChange={e => handleUpdateDenom(denom.id, 'stock', parseInt(e.target.value) || 0)}
-                              placeholder="Stok"
+                              placeholder={denom.stockMode === 'unlimited' ? 'Tanpa batas' : 'Stok'}
+                              disabled={denom.stockMode === 'unlimited'}
                             />
+                            <select
+                              className="form-select order-input form-select-sm"
+                              value={denom.stockMode === 'unlimited' ? 'unlimited' : 'limited'}
+                              onChange={e => handleUpdateDenom(denom.id, 'stockMode', e.target.value)}
+                              aria-label={`Mode stok ${denom.name}`}
+                            >
+                              <option value="limited">Stok terbatas</option>
+                              <option value="unlimited">Tanpa batas</option>
+                            </select>
                             <input
                               type="text"
                               className="form-control order-input form-control-sm"

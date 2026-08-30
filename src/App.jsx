@@ -11,7 +11,6 @@ import {
   normalizeStoredProducts,
   readUserTransactions,
 } from './lib/storage';
-import { autoRestockProducts } from './lib/productStock';
 import { hydrateCloudStateKeys, writeCloudBackedValue } from './lib/cloudState';
 import { trackTrafficView } from './lib/trafficTracker';
 import { getAccountBlock, isAccountBlocked } from './lib/accountBlocks';
@@ -113,8 +112,7 @@ function App() {
 
   const [products, setProducts] = useState(() => {
     const normalizedProducts = normalizeStoredProducts(localStorage.getItem('wartop_products'), initialProducts);
-    const restocked = autoRestockProducts(normalizedProducts);
-    return restocked.products;
+    return normalizedProducts;
   });
 
   useEffect(() => {
@@ -181,8 +179,7 @@ function App() {
     hydrateCloudStateKeys(['wartop_products', 'wartop_blocked_users']).then((result) => {
       if (result.ok && result.hydrated > 0) {
         const normalizedProducts = normalizeStoredProducts(localStorage.getItem('wartop_products'), initialProducts);
-        const restocked = autoRestockProducts(normalizedProducts);
-        setProducts(restocked.products);
+        setProducts(normalizedProducts);
       }
     });
   }, []);
@@ -349,31 +346,13 @@ function App() {
   };
 
   const handleUpdateProducts = (newProducts, options = {}) => {
-    const restocked = autoRestockProducts(newProducts);
-    setProducts(restocked.products);
+    setProducts(newProducts);
     if (options.persist) {
-      writeCloudBackedValue('wartop_products', restocked.products);
+      writeCloudBackedValue('wartop_products', newProducts);
     } else {
-      localStorage.setItem('wartop_products', JSON.stringify(restocked.products));
+      localStorage.setItem('wartop_products', JSON.stringify(newProducts));
     }
   };
-
-  useEffect(() => {
-    const runAutoRestock = () => {
-      setProducts((currentProducts) => {
-        const restocked = autoRestockProducts(currentProducts);
-        if (restocked.changed > 0) {
-          localStorage.setItem('wartop_products', JSON.stringify(restocked.products));
-          return restocked.products;
-        }
-        return currentProducts;
-      });
-    };
-
-    runAutoRestock();
-    const timer = setInterval(runAutoRestock, 120 * 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const handleNavigate = (view, data) => {
     if (view === 'home') {

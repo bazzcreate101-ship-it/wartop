@@ -76,6 +76,7 @@ export function normalizeStoredProducts(savedProducts, fallbackProducts) {
     }
 
     const savedProduct = mergedById.get(product.id);
+    const shouldApplyStockControl = Number(product.stockControlVersion || 0) > Number(savedProduct.stockControlVersion || 0);
     const fallbackDenominations = Array.isArray(product.denominations) ? product.denominations : [];
     const savedDenominationsById = new Map(
       (Array.isArray(savedProduct.denominations) ? savedProduct.denominations : [])
@@ -85,12 +86,20 @@ export function normalizeStoredProducts(savedProducts, fallbackProducts) {
 
     const mergedDenominations = fallbackDenominations.map((denom) => {
       const savedDenom = savedDenominationsById.get(denom.id) || {};
+      const stockMode = shouldApplyStockControl
+        ? denom.stockMode
+        : (savedDenom.stockMode === 'unlimited' ? 'unlimited' : denom.stockMode);
       return {
         ...denom,
         originalPrice: Number.isFinite(Number(savedDenom.originalPrice)) ? Number(savedDenom.originalPrice) : denom.originalPrice,
         price: Number.isFinite(Number(savedDenom.price)) ? Number(savedDenom.price) : denom.price,
         points: Number.isFinite(Number(savedDenom.points)) ? Number(savedDenom.points) : denom.points,
-        stock: Number.isFinite(Number(savedDenom.stock)) ? Number(savedDenom.stock) : denom.stock,
+        stock: stockMode === 'unlimited'
+          ? undefined
+          : shouldApplyStockControl
+            ? denom.stock
+            : Number.isFinite(Number(savedDenom.stock)) ? Number(savedDenom.stock) : denom.stock,
+        stockMode,
         description: typeof savedDenom.description === 'string' && savedDenom.description.trim()
           ? savedDenom.description
           : denom.description,
@@ -99,6 +108,7 @@ export function normalizeStoredProducts(savedProducts, fallbackProducts) {
 
     mergedById.set(product.id, normalize({
       ...product,
+      stockControlVersion: product.stockControlVersion || savedProduct.stockControlVersion,
       active: savedProduct.active !== false,
       popular: typeof savedProduct.popular === 'boolean' ? savedProduct.popular : product.popular,
       discount: typeof savedProduct.discount === 'string' ? savedProduct.discount : product.discount,

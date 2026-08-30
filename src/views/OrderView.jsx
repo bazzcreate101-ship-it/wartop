@@ -67,7 +67,7 @@ export default function OrderView({ productId, products, onNavigate, user, onLog
       }
     });
     if (!selectedDenom) newErrors.denom = 'Pilih nominal terlebih dahulu';
-    if (selectedDenom && Number(selectedDenom.stock) <= 0) newErrors.denom = 'Stok pilihan ini sedang kosong. Pilih varian lain.';
+    if (selectedDenom && selectedDenom.stockMode !== 'unlimited' && Number.isFinite(Number(selectedDenom.stock)) && Number(selectedDenom.stock) <= 0) newErrors.denom = 'Stok pilihan ini sedang kosong. Pilih varian lain.';
     if (!selectedPayment) newErrors.payment = 'Pilih metode pembayaran terlebih dahulu';
     return newErrors;
   };
@@ -274,7 +274,8 @@ export default function OrderView({ productId, products, onNavigate, user, onLog
                 {errors.denom && <div className="alert alert-danger py-1 px-2 mb-2" style={{ fontSize: '0.83rem' }}>{errors.denom}</div>}
                 <div className="denom-grid">
                   {product.denominations.map(denom => {
-                    const isOutOfStock = Number(denom.stock) <= 0;
+                    const isUnlimitedStock = denom.stockMode === 'unlimited';
+                    const isOutOfStock = !isUnlimitedStock && Number.isFinite(Number(denom.stock)) && Number(denom.stock) <= 0;
                     return (
                     <button
                       key={denom.id}
@@ -299,7 +300,9 @@ export default function OrderView({ productId, products, onNavigate, user, onLog
                       <span className="denom-card__name">{denom.name}</span>
                       {denom.accessType && <span className="denom-card__meta">{denom.accessType} · {denom.duration || 'Sesuai paket'}</span>}
                       <span className="denom-card__price">{formatRupiah(denom.price)}</span>
-                      {Number.isFinite(Number(denom.stock)) && <span className="denom-card__stock">{isOutOfStock ? 'Stok kosong' : `Stok ${denom.stock}`}</span>}
+                      {isUnlimitedStock
+                        ? <span className="denom-card__stock">Stok tanpa batas</span>
+                        : Number.isFinite(Number(denom.stock)) && <span className="denom-card__stock">{isOutOfStock ? 'Stok kosong' : `Stok ${denom.stock}`}</span>}
                       {denom.description && <span className="denom-card__description">{denom.description}</span>}
                     </button>
                   );})}
