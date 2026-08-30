@@ -4508,8 +4508,36 @@ footer a:hover {
   transition: transform 0.3s ease;
 }
 
+.wartop-product-card__media > img.wartop-product-card__brand-icon,
+.wartop-product-card__media > img.wartop-product-card__currency-icon {
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  inset: auto;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9px;
+  object-fit: contain;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.38);
+}
+
+.wartop-product-card__media > img.wartop-product-card__brand-icon {
+  top: 0.65rem;
+  right: 0.65rem;
+}
+
+.wartop-product-card__media > img.wartop-product-card__currency-icon {
+  bottom: 0.65rem;
+  left: 0.65rem;
+  background: #ffffff;
+}
+
 .wartop-product-card:hover .wartop-product-card__media > img {
   transform: scale(1.035);
+}
+
+.wartop-product-card:hover .wartop-product-card__media > img.wartop-product-card__brand-icon,
+.wartop-product-card:hover .wartop-product-card__media > img.wartop-product-card__currency-icon {
+  transform: none;
 }
 
 .wartop-product-card__badge {

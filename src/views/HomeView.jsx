@@ -66,6 +66,8 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
                       decoding="async"
                       onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
                     />
+                    {product.brandIcon && <img src={product.brandIcon} alt="" className="wartop-product-card__brand-icon" loading="lazy" />}
+                    {product.currencyIcon && <img src={product.currencyIcon} alt="" className="wartop-product-card__currency-icon" loading="lazy" />}
                     {product.discount && <span className="wartop-product-card__badge">{product.discount}</span>}
                     {!product.comingSoon && <span className="wartop-product-card__arrow" aria-hidden="true"><i className="bi bi-arrow-up-right"></i></span>}
                   </div>

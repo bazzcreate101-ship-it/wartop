@@ -236,7 +236,9 @@ export const products = [
     id: 'roblox-robux',
     name: 'Roblox Robux',
     category: '1',
-    image: '/wartop-mark.png',
+    image: '/gassets/roblox/roblox-cover.jpg',
+    brandIcon: '/gassets/roblox/roblox-mark.png',
+    currencyIcon: '/gassets/roblox/robux-icon.png',
     popular: true,
     featured: true,
     active: true,
@@ -248,12 +250,12 @@ export const products = [
       { name: 'username', placeholder: 'Username Roblox', type: 'text' }
     ],
     denominations: [
-      { id: 'robux-120', name: '120 Robux', originalPrice: 10000, price: 10000, points: 120 },
-      { id: 'robux-250', name: '250 Robux', originalPrice: 21000, price: 21000, points: 250 },
-      { id: 'robux-500', name: '500 Robux', originalPrice: 47000, price: 47000, points: 500 },
-      { id: 'robux-700', name: '700 Robux', originalPrice: 65000, price: 65000, points: 700 },
-      { id: 'robux-1200', name: '1.200 Robux', originalPrice: 105000, price: 105000, points: 1200 },
-      { id: 'robux-2000', name: '2.000 Robux', originalPrice: 173000, price: 173000, points: 2000 }
+      { id: 'robux-120', name: '120 Robux', image: '/gassets/roblox/robux-icon.png', originalPrice: 10000, price: 10000, points: 120 },
+      { id: 'robux-250', name: '250 Robux', image: '/gassets/roblox/robux-icon.png', originalPrice: 21000, price: 21000, points: 250 },
+      { id: 'robux-500', name: '500 Robux', image: '/gassets/roblox/robux-icon.png', originalPrice: 47000, price: 47000, points: 500 },
+      { id: 'robux-700', name: '700 Robux', image: '/gassets/roblox/robux-icon.png', originalPrice: 65000, price: 65000, points: 700 },
+      { id: 'robux-1200', name: '1.200 Robux', image: '/gassets/roblox/robux-icon.png', originalPrice: 105000, price: 105000, points: 1200 },
+      { id: 'robux-2000', name: '2.000 Robux', image: '/gassets/roblox/robux-icon.png', originalPrice: 173000, price: 173000, points: 2000 }
     ]
   },
   {
