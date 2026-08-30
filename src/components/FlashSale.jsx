@@ -3,6 +3,15 @@ import { productImages } from '../assets/images';
 
 const flashSaleItems = [
   {
+    productId: 'roblox-robux',
+    denominationId: 'robux-120',
+    name: 'Roblox Robux',
+    meta: '120 Robux',
+    image: '/wartop-mark.png',
+    originalPrice: 'Rp 10.000',
+    price: 'Rp 10.000'
+  },
+  {
     productId: 'higgs-game-island',
     denominationId: 'higgs-1b',
     name: 'Higgs Game Island',

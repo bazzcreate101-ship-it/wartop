@@ -8,7 +8,9 @@ import { categories as productCategories } from '../data/products';
 export default function HomeView({ products, onSelectProduct, onNavigate }) {
   const [activeCategory, setActiveCategory] = useState('popular');
 
-  const visibleProducts = products.filter((product) => product.active !== false);
+  const visibleProducts = products
+    .filter((product) => product.active !== false)
+    .sort((first, second) => Number(Boolean(second.featured)) - Number(Boolean(first.featured)));
   const filteredProducts = activeCategory === 'popular'
     ? visibleProducts.filter(p => p.popular)
     : visibleProducts.filter(p => p.category === activeCategory);

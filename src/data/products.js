@@ -238,6 +238,7 @@ export const products = [
     category: '1',
     image: '/wartop-mark.png',
     popular: true,
+    featured: true,
     active: true,
     discount: 'ROBUX',
     cardLabel: 'Roblox · Robux',

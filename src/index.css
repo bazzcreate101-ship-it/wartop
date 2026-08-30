@@ -525,7 +525,8 @@ body {
   display: flex;
   gap: 16px;
   width: max-content;
-  animation: flashSaleScroll 30s linear infinite;
+  will-change: transform;
+  animation: flashSaleScroll 24s linear infinite;
 }
 
 .flash-sale-marquee:hover .flash-sale-track {
