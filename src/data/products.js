@@ -232,6 +232,43 @@ export const products = [
       { id: 'rm-300', name: '300 Gems', originalPrice: 75000, price: 69000, points: 100 }
     ]
   },
+  {
+    id: 'roblox-robux',
+    name: 'Roblox Robux',
+    category: '1',
+    image: '/wartop-mark.png',
+    popular: true,
+    active: true,
+    discount: 'ROBUX',
+    cardLabel: 'Roblox · Robux',
+    description: 'Isi Robux ke akun Roblox dengan memasukkan username Roblox saja. Wartop tidak pernah meminta password akun.',
+    inputLabel: 'Masukkan username Roblox untuk menerima Robux',
+    inputFields: [
+      { name: 'username', placeholder: 'Username Roblox', type: 'text' }
+    ],
+    denominations: [
+      { id: 'robux-120', name: '120 Robux', originalPrice: 10000, price: 10000, points: 120 },
+      { id: 'robux-250', name: '250 Robux', originalPrice: 21000, price: 21000, points: 250 },
+      { id: 'robux-500', name: '500 Robux', originalPrice: 47000, price: 47000, points: 500 },
+      { id: 'robux-700', name: '700 Robux', originalPrice: 65000, price: 65000, points: 700 },
+      { id: 'robux-1200', name: '1.200 Robux', originalPrice: 105000, price: 105000, points: 1200 },
+      { id: 'robux-2000', name: '2.000 Robux', originalPrice: 173000, price: 173000, points: 2000 }
+    ]
+  },
+  {
+    id: 'fish-it',
+    name: 'Fish It · Ikan Roblox',
+    category: '1',
+    image: '/wartop-mark.png',
+    popular: false,
+    active: true,
+    comingSoon: true,
+    discount: 'SEGERA HADIR',
+    cardLabel: 'Roblox · Fish It',
+    description: 'Katalog ikan Fish It akan dibuka setelah daftar jenis ikan dan harga dari admin tersedia.',
+    inputFields: [],
+    denominations: []
+  },
   // Voucher games
   {
     id: 'rf-return-rpg-beyond',

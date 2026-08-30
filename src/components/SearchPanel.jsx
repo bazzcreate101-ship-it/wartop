@@ -8,6 +8,7 @@ export default function SearchPanel({ isOpen, products, onClose, onSelectProduct
     if (query.trim().length >= 3) {
       const filtered = products.filter(p =>
         p.active !== false &&
+        !p.comingSoon &&
         p.name.toLowerCase().includes(query.toLowerCase())
       );
       setResults(filtered);

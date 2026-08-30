@@ -143,7 +143,7 @@ export default function ChatWidget({ products, user, transactions }) {
       ? getWithdrawalRequests().filter((request) => request.userEmail === user.email).slice(0, 12)
       : [];
 
-    const activeProducts = products.filter((product) => product.active !== false);
+    const activeProducts = products.filter((product) => product.active !== false && !product.comingSoon);
     const aiProducts = activeProducts.filter((product) => (
       product.category === '9' || /chatgpt|claude|gemini|grok/i.test(`${product.name} ${product.description || ''}`)
     ));

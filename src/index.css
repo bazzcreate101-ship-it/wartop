@@ -4450,6 +4450,19 @@ footer a:hover {
   transform: translateY(-5px);
 }
 
+.wartop-product-card--soon {
+  cursor: default;
+  opacity: .82;
+}
+
+.wartop-product-card--soon:hover {
+  transform: none;
+}
+
+.wartop-product-card--soon .wartop-product-card__media > img {
+  filter: saturate(.68);
+}
+
 .wartop-product-card--ai {
   border-color: rgba(74, 170, 255, 0.3);
   background: linear-gradient(155deg, rgba(17, 57, 118, 0.96), rgba(6, 19, 43, 0.98));

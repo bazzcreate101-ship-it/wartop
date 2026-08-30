@@ -52,14 +52,9 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
             </header>
 
             <div className="wartop-catalog__grid" id="populer-grid-max">
-              {filteredProducts.map((product) => (
-                <a
-                  key={product.id}
-                  href={`/order/${product.id}`}
-                  onClick={(event) => handleProductClick(product.id, event)}
-                  className={`wartop-product-card ${product.category === '9' ? 'wartop-product-card--ai' : ''}`}
-                  aria-label={`Lihat ${product.name}`}
-                >
+              {filteredProducts.map((product) => {
+                const cardClassName = `wartop-product-card ${product.category === '9' ? 'wartop-product-card--ai' : ''} ${product.comingSoon ? 'wartop-product-card--soon' : ''}`;
+                const cardContent = (
                   <div className="wartop-product-card__media" style={{ backgroundImage: `url('${product.image}')` }}>
                     <span className="wartop-product-card__veil" aria-hidden="true"></span>
                     <img
@@ -70,15 +65,25 @@ export default function HomeView({ products, onSelectProduct, onNavigate }) {
                       onError={(event) => { event.currentTarget.src = '/wartop-mark.png'; }}
                     />
                     {product.discount && <span className="wartop-product-card__badge">{product.discount}</span>}
-                    <span className="wartop-product-card__arrow" aria-hidden="true"><i className="bi bi-arrow-up-right"></i></span>
+                    {!product.comingSoon && <span className="wartop-product-card__arrow" aria-hidden="true"><i className="bi bi-arrow-up-right"></i></span>}
                   </div>
+                );
+                const cardBody = (
                   <div className="wartop-product-card__body">
                     <span>{product.cardLabel || 'Top up digital'}</span>
                     <h4>{product.name}</h4>
-                    <small>{product.category === '9' ? `${product.denominations?.length || 0} varian tersedia` : 'Lihat nominal & harga'}</small>
+                    <small>{product.comingSoon ? 'Jenis ikan & harga menyusul' : product.category === '9' ? `${product.denominations?.length || 0} varian tersedia` : 'Lihat nominal & harga'}</small>
                   </div>
-                </a>
-              ))}
+                );
+                if (product.comingSoon) {
+                  return <article key={product.id} className={cardClassName} aria-label={`${product.name} segera hadir`}>{cardContent}{cardBody}</article>;
+                }
+                return (
+                  <a key={product.id} href={`/order/${product.id}`} onClick={(event) => handleProductClick(product.id, event)} className={cardClassName} aria-label={`Lihat ${product.name}`}>
+                    {cardContent}{cardBody}
+                  </a>
+                );
+              })}
             </div>
 
             {filteredProducts.length === 0 && (
